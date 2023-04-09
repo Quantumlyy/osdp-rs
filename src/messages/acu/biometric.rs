@@ -1,4 +1,7 @@
-use crate::{models::command::biometric::BiometricRead, messages::command::{OSDPCommand, CommandType}};
+use crate::{
+    messages::command::{CommandType, OSDPCommand},
+    models::command::biometric::BiometricRead,
+};
 
 impl OSDPCommand<4> for BiometricRead {
     fn cmnd(&self) -> CommandType {
