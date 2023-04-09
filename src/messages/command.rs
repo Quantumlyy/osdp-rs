@@ -56,7 +56,10 @@ pub enum CommandType {
     KeepActive = 0xA7,
 }
 
-pub trait OSDPCommand<const SIZE: usize> {
+pub trait OSDPCommand {
+    /// The command type.
     fn cmnd(&self) -> CommandType;
-    fn build_command_data(&self) -> [u8; SIZE];
+
+    /// The command data.
+    fn build_command_data(&self) -> Vec<u8>;
 }

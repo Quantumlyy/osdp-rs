@@ -66,3 +66,41 @@ impl BiometricRead {
         }
     }
 }
+
+pub struct BiometricMatch<'a> {
+    /// The reader number.
+    pub reader: u8,
+    /// The type/body part.
+    pub biometric_type: BiometricType,
+    /// The format of the attached template.
+    pub biometric_format: BiometricFormat,
+    /// The quality value normalised between `0x00` and `0xFF`.
+    pub biometric_quality: u8,
+    /// The template data.
+    pub biometric_template_data: &'a [u8],
+}
+
+impl<'a> BiometricMatch<'a> {
+    /// # Arguments
+    ///
+    /// * `reader` - The reader number starting at 0.
+    /// * `biometric_type` - The type/body part to scan.
+    /// * `biometric_format` - The format of the attached template.
+    /// * `biometric_quality` - The quality value normalised between `0x00` and `0xFF`.
+    /// * `biometric_template_data` - The template data.
+    pub fn new(
+        reader: u8,
+        biometric_type: BiometricType,
+        biometric_format: BiometricFormat,
+        biometric_quality: u8,
+        biometric_template_data: &'a [u8],
+    ) -> Self {
+        Self {
+            reader,
+            biometric_type,
+            biometric_format,
+            biometric_quality,
+            biometric_template_data,
+        }
+    }
+}
