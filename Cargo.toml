@@ -1,8 +1,13 @@
 [package]
 name = "osdp"
 version = "0.1.0"
-edition = "2021"
+description = "Rust implementation of the Open Supervised Device Protocol (OSDP)"
+license = "BSD-3-Clause"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+homepage = "https://github.com/Quantumlyy/osdp-rs/blob/main/README.md"
+documentation = "https://docs.rs/osdp"
+repository = "https://github.com/Quantumlyy/osdp-rs/"
+
+edition = "2021"
 
 [dependencies]
