@@ -1,4 +1,4 @@
-#[derive(Default, Clone, Copy)]
+#[derive(Default, PartialEq, Eq, Clone, Copy)]
 #[repr(u8)]
 pub enum BiometricFormat {
     /// Default method to scan.
@@ -10,7 +10,7 @@ pub enum BiometricFormat {
     FingerPrintTemplate = 0x02,
 }
 
-#[derive(Default, Clone, Copy)]
+#[derive(Default, PartialEq, Eq, Clone, Copy)]
 #[repr(u8)]
 pub enum BiometricType {
     #[default]
@@ -34,6 +34,7 @@ pub enum BiometricType {
     LeftHandGeometry = 0x11,
 }
 
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub struct BiometricRead {
     /// The reader number.
     pub reader: u8,
@@ -67,6 +68,7 @@ impl BiometricRead {
     }
 }
 
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub struct BiometricMatch<'a> {
     /// The reader number.
     pub reader: u8,

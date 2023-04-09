@@ -1,5 +1,5 @@
 /// Output Control Code
-#[derive(Default, Clone, Copy)]
+#[derive(Default, PartialEq, Eq, Clone, Copy)]
 #[repr(u8)]
 pub enum OutputControlCode {
     /// NOP – do not alter this output.
