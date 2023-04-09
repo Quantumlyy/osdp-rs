@@ -1,5 +1,8 @@
+#[derive(Default)]
+#[repr(u8)]
 pub enum BiometricFormat {
     /// Default method to scan.
+    #[default]
     NotSpecified = 0x00,
     /// Send raw fingerprint data as PGM.
     RawFingerprintData = 0x01,
@@ -7,7 +10,10 @@ pub enum BiometricFormat {
     FingerPrintTemplate = 0x02,
 }
 
+#[derive(Default)]
+#[repr(u8)]
 pub enum BiometricType {
+    #[default]
     NotSpecified = 0x00,
     RightThumbPrint = 0x01,
     RightIndexFingerPrint = 0x02,
