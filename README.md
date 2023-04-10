@@ -15,7 +15,7 @@
  - [x] osdp_ID
  - [x] osdp_CAP
  - [x] osdp_LSTAT
- - [ ] osdp_ISTAT
+ - [x] osdp_ISTAT
  - [ ] osdp_OSTAT
  - [ ] osdp_RSTAT
  - [ ] osdp_OUT

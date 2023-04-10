@@ -29,3 +29,19 @@ impl Default for LocalStatusReport {
         Self {}
     }
 }
+
+/// `osdp_ISTAT`
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub struct InputStatusReport {}
+
+impl InputStatusReport {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl Default for InputStatusReport {
+    fn default() -> Self {
+        Self {}
+    }
+}
