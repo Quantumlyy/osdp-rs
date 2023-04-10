@@ -12,7 +12,7 @@
 ### Command data build
 
  - [x] osdp_POLL
- - [ ] osdp_ID
+ - [x] osdp_ID
  - [ ] osdp_CAP
  - [ ] osdp_LSTAT
  - [ ] osdp_ISTAT
