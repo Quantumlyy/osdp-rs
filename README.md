@@ -13,7 +13,7 @@
 
  - [x] osdp_POLL
  - [x] osdp_ID
- - [ ] osdp_CAP
+ - [x] osdp_CAP
  - [ ] osdp_LSTAT
  - [ ] osdp_ISTAT
  - [ ] osdp_OSTAT
