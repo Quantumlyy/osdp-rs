@@ -45,3 +45,19 @@ impl Default for InputStatusReport {
         Self {}
     }
 }
+
+/// `osdp_OSTAT`
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub struct OutputStatusReport {}
+
+impl OutputStatusReport {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl Default for OutputStatusReport {
+    fn default() -> Self {
+        Self {}
+    }
+}

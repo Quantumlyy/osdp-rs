@@ -16,7 +16,7 @@
  - [x] osdp_CAP
  - [x] osdp_LSTAT
  - [x] osdp_ISTAT
- - [ ] osdp_OSTAT
+ - [x] osdp_OSTAT
  - [ ] osdp_RSTAT
  - [ ] osdp_OUT
  - [ ] osdp_LED
