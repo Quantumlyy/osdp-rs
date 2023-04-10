@@ -14,7 +14,7 @@
  - [x] osdp_POLL
  - [x] osdp_ID
  - [x] osdp_CAP
- - [ ] osdp_LSTAT
+ - [x] osdp_LSTAT
  - [ ] osdp_ISTAT
  - [ ] osdp_OSTAT
  - [ ] osdp_RSTAT
