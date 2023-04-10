@@ -61,3 +61,19 @@ impl Default for OutputStatusReport {
         Self {}
     }
 }
+
+/// `osdp_RSTAT`
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub struct ReaderStatusReport {}
+
+impl ReaderStatusReport {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl Default for ReaderStatusReport {
+    fn default() -> Self {
+        Self {}
+    }
+}
