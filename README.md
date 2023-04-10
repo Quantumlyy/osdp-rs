@@ -18,7 +18,7 @@
  - [x] osdp_ISTAT
  - [x] osdp_OSTAT
  - [x] osdp_RSTAT
- - [ ] osdp_OUT
+ - [x] osdp_OUT
  - [ ] osdp_LED
  - [ ] osdp_BUZ
  - [ ] osdp_TEXT

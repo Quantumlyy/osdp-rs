@@ -1,5 +1,5 @@
 /// Encryption method to use with the key.
-#[derive(Default, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
 #[repr(u8)]
 pub enum KeyType {
     #[default]
@@ -7,7 +7,7 @@ pub enum KeyType {
 }
 
 /// `osdp_KEYSET`
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct EncryptionKeyConfiguration<'a> {
     /// The key type.
     pub key_type: KeyType,

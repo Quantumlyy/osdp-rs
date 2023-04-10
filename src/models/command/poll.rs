@@ -1,5 +1,5 @@
 /// `osdp_POLL`
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Poll {}
 
 impl Poll {

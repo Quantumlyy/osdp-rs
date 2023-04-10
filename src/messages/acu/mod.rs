@@ -1,4 +1,5 @@
 pub mod biometric;
+pub mod output_control;
 pub mod peripheral_device_capabilities;
 pub mod report;
 pub mod poll;

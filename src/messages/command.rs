@@ -1,4 +1,4 @@
-#[derive(Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy)]
 #[repr(u8)]
 pub enum CommandType {
     /// osdp_POLL - poll request

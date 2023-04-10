@@ -1,5 +1,5 @@
 /// `osdp_CAP`
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct PeripheralDeviceCapabilities {}
 
 impl PeripheralDeviceCapabilities {

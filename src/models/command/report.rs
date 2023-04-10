@@ -1,5 +1,5 @@
 /// `osdp_ID`
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct IDReport {}
 
 impl IDReport {
@@ -15,7 +15,7 @@ impl Default for IDReport {
 }
 
 /// `osdp_LSTAT`
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct LocalStatusReport {}
 
 impl LocalStatusReport {
@@ -31,7 +31,7 @@ impl Default for LocalStatusReport {
 }
 
 /// `osdp_ISTAT`
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct InputStatusReport {}
 
 impl InputStatusReport {
@@ -47,7 +47,7 @@ impl Default for InputStatusReport {
 }
 
 /// `osdp_OSTAT`
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct OutputStatusReport {}
 
 impl OutputStatusReport {
@@ -63,7 +63,7 @@ impl Default for OutputStatusReport {
 }
 
 /// `osdp_RSTAT`
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct ReaderStatusReport {}
 
 impl ReaderStatusReport {
