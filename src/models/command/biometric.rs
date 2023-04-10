@@ -34,6 +34,7 @@ pub enum BiometricType {
     LeftHandGeometry = 0x11,
 }
 
+/// `osdp_BIOREAD`
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct BiometricRead {
     /// The reader number.
@@ -68,6 +69,7 @@ impl BiometricRead {
     }
 }
 
+/// `osdp_BIOMATCH`
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct BiometricMatch<'a> {
     /// The reader number.

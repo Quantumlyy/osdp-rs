@@ -6,6 +6,7 @@ pub enum KeyType {
     SecureChannelBaseKey = 0x01,
 }
 
+/// `osdp_KEYSET`
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct EncryptionKeyConfiguration<'a> {
     /// The key type.
