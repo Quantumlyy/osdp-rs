@@ -1,3 +1,7 @@
+use std::vec;
+
+use crate::constants::SOM;
+
 #[derive(Debug, Default, Clone, Copy)]
 #[repr(u8)]
 pub enum CommandType {
@@ -62,4 +66,35 @@ pub trait OSDPCommand {
 
     /// The command data.
     fn build_command_data(&self) -> Vec<u8>;
+
+    fn build_command_header(&self) -> Vec<u8> {
+        vec![
+            SOM,
+            0x00, // TODO: device address
+            0x00, // LEN_LSB
+            0x00, // LEN_MSB
+            0x00, // TODO: message control byte
+            // TODO: security
+            self.cmnd() as u8,
+        ]
+    }
+
+    fn build_command_modify(&self, _command: &mut Vec<u8>) {}
+
+    fn build_command(&self) -> Vec<u8> {
+        let header = self.build_command_header();
+        let data = self.build_command_data();
+
+        let mut command = vec![];
+        command.extend(header);
+        command.extend(data);
+
+        let command_length = command.len().to_be_bytes();
+        command[2] = command_length[0];
+        command[3] = command_length[1];
+
+        self.build_command_modify(&mut command);
+
+        command
+    }
 }
