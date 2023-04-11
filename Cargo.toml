@@ -1,6 +1,6 @@
 [package]
 name = "osdp"
-version = "0.1.7"
+version = "0.1.8"
 description = "Rust implementation of the Open Supervised Device Protocol (OSDP)"
 license = "BSD-3-Clause"
 

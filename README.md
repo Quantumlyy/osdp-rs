@@ -20,7 +20,7 @@
  - [x] osdp_RSTAT
  - [x] osdp_OUT
  - [ ] osdp_LED
- - [ ] osdp_BUZ
+ - [x] osdp_BUZ
  - [ ] osdp_TEXT
  - [ ] osdp_COMSET
  - [x] osdp_BIOREAD

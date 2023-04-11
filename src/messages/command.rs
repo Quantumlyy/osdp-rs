@@ -1,6 +1,6 @@
 use std::vec;
 
-use crate::constants::SOM;
+use crate::{constants::SOM, hw::device::Device};
 
 #[derive(Debug, Default, Clone, Copy)]
 #[repr(u8)]
@@ -67,13 +67,13 @@ pub trait OSDPCommand {
     /// The command data.
     fn build_command_data(&self) -> Vec<u8>;
 
-    fn build_command_header(&self) -> Vec<u8> {
+    fn build_command_header(&self, device: &impl Device) -> Vec<u8> {
         vec![
             SOM,
-            0x00, // TODO: device address
+            device.addr(),
             0x00, // LEN_LSB
             0x00, // LEN_MSB
-            0x00, // TODO: message control byte
+            device.control_byte(),
             // TODO: security
             self.cmnd() as u8,
         ]
@@ -81,8 +81,8 @@ pub trait OSDPCommand {
 
     fn build_command_modify(&self, _command: &mut Vec<u8>) {}
 
-    fn build_command(&self) -> Vec<u8> {
-        let header = self.build_command_header();
+    fn build_command(&self, device: &impl Device) -> Vec<u8> {
+        let header = self.build_command_header(device);
         let data = self.build_command_data();
 
         let mut command = vec![];
