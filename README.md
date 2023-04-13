@@ -30,7 +30,7 @@
  - [ ] osdp_SCRYPT
  - [ ] osdp_MFG
  - [ ] osdp_ACURXSIZE
- - [ ] osdp_KEEPACTIVE
+ - [x] osdp_KEEPACTIVE
  - [ ] osdp_ABORT
  - [ ] osdp_PIVDATA
  - [ ] osdp_GENAUTH
