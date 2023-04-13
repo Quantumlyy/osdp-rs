@@ -1,6 +1,6 @@
 [package]
 name = "osdp"
-version = "0.1.8"
+version = "0.1.9"
 description = "Rust implementation of the Open Supervised Device Protocol (OSDP)"
 license = "BSD-3-Clause"
 
@@ -9,6 +9,11 @@ documentation = "https://docs.rs/osdp"
 repository = "https://github.com/Quantumlyy/osdp-rs/"
 
 edition = "2021"
+
+[features]
+hid-iclass-hadp = []
+hid-iclass-osdp-v1 = []
+hid-iclass-osdp-v2 = []
 
 [dependencies]
 crc16 = "^0.4.0"
