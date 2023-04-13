@@ -1,14 +1,14 @@
 use crate::{
     messages::command::{CommandType, OSDPCommand},
-    models::command::keep_reader_active::KeepReaderActive,
+    models::command::acu_receive_size::ACUReceiveSize,
 };
 
-impl OSDPCommand for KeepReaderActive {
+impl OSDPCommand for ACUReceiveSize {
     fn cmnd(&self) -> CommandType {
-        CommandType::KeepActive
+        CommandType::MaxReplySize
     }
 
     fn build_command_data(&self) -> Vec<u8> {
-        self.keep_active_time.to_be_bytes().to_vec()
+        self.acu_max_receive_buffer.to_be_bytes().to_vec()
     }
 }

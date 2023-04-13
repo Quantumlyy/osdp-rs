@@ -29,7 +29,7 @@
  - [ ] osdp_CHLNG
  - [ ] osdp_SCRYPT
  - [ ] osdp_MFG
- - [ ] osdp_ACURXSIZE
+ - [x] osdp_ACURXSIZE
  - [x] osdp_KEEPACTIVE
  - [ ] osdp_ABORT
  - [ ] osdp_PIVDATA
