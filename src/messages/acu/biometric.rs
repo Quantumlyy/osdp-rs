@@ -30,7 +30,7 @@ impl OSDPCommand for BiometricMatch<'_> {
             self.biometric_format as u8,
             self.biometric_quality,
         ];
-        data.extend_from_slice(&self.biometric_template_data.len().to_be_bytes());
+        data.extend_from_slice(&self.biometric_template_data.len().to_le_bytes());
         data.extend_from_slice(self.biometric_template_data);
 
         data

@@ -12,7 +12,7 @@ impl OSDPCommand for OutputControl<'_> {
         self.output_states
             .iter()
             .map(|os| {
-                let timer_bytes = os.timer.to_be_bytes();
+                let timer_bytes = os.timer.to_le_bytes();
                 [
                     os.output_number,
                     os.control_code as u8,

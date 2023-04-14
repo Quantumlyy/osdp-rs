@@ -98,7 +98,7 @@ pub trait OSDPCommand {
         command.splice(0..header_length, header);
         command.splice(header_length..(header_length + data_length), data);
 
-        let command_length = command.len().to_be_bytes();
+        let command_length = command.len().to_le_bytes();
         command[2] = command_length[0];
         command[3] = command_length[1];
 

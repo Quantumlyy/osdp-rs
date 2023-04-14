@@ -9,6 +9,6 @@ impl OSDPCommand for KeepReaderActive {
     }
 
     fn build_command_data(&self) -> Vec<u8> {
-        self.keep_active_time.to_be_bytes().to_vec()
+        self.keep_active_time.to_le_bytes().to_vec()
     }
 }
