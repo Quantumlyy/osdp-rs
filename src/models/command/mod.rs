@@ -1,3 +1,4 @@
+pub mod abort;
 pub mod acu_receive_size;
 pub mod biometric;
 pub mod buzzer;

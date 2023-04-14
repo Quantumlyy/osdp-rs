@@ -31,7 +31,7 @@
  - [ ] osdp_MFG
  - [x] osdp_ACURXSIZE
  - [x] osdp_KEEPACTIVE
- - [ ] osdp_ABORT
+ - [x] osdp_ABORT
  - [ ] osdp_PIVDATA
  - [ ] osdp_GENAUTH
  - [ ] osdp_CRAUTH
