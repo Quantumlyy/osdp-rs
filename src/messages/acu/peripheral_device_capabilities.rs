@@ -9,8 +9,6 @@ impl OSDPCommand for PeripheralDeviceCapabilities {
     }
 
     fn build_command_data(&self) -> Vec<u8> {
-        vec![
-            0x00
-        ]
+        vec![0x00]
     }
 }

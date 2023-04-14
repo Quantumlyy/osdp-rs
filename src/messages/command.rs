@@ -79,6 +79,11 @@ pub trait OSDPCommand {
         ]
     }
 
+    fn attach_command_checksum(&self, command: &mut Vec<u8>) {
+        let checksum = crate::utils::checksum::calculate_checksum(command);
+        command.push(checksum);
+    }
+
     fn build_command_modify(&self, _command: &mut Vec<u8>) {}
 
     fn build_command(&self, device: &impl Device) -> Vec<u8> {
@@ -92,6 +97,11 @@ pub trait OSDPCommand {
         let command_length = command.len().to_be_bytes();
         command[2] = command_length[0];
         command[3] = command_length[1];
+
+        if device.crc() {
+        } else {
+            self.attach_command_checksum(&mut command);
+        }
 
         self.build_command_modify(&mut command);
 

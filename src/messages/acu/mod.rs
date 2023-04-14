@@ -1,9 +1,9 @@
 //! Not all commands can are implemented by all parties that use OSDP.
 //! Below is a compatibility table for `OSDP v2.2`, `iClass HADP`, `iClass SE OSDP v1`, and `iClass SE OSDP v2`.
-//! 
+//!
 //! - `✅` = Fully implemented.
 //! - `❌` = Not implemented, not applicable, or not enabled.
-//! 
+//!
 //! | Command Name        | Command Value | OSDP v2.2   | iClass HADP   | iClass SE OSDP v1   | iClass SE OSDP v2   |
 //! |---------------------|---------------|-------------|---------------|---------------------|---------------------|
 //! | `osdp_POLL`         | `0x60`        | ✅          | ✅             | ✅                  | ✅                  |
@@ -49,6 +49,6 @@ pub mod buzzer;
 pub mod keep_reader_active;
 pub mod output_control;
 pub mod peripheral_device_capabilities;
-pub mod report;
 pub mod poll;
+pub mod report;
 pub mod secure_channel_configuration;

@@ -1,6 +1,8 @@
 use crate::{
     messages::command::{CommandType, OSDPCommand},
-    models::command::report::{IDReport, LocalStatusReport, InputStatusReport, OutputStatusReport, ReaderStatusReport},
+    models::command::report::{
+        IDReport, InputStatusReport, LocalStatusReport, OutputStatusReport, ReaderStatusReport,
+    },
 };
 
 impl OSDPCommand for IDReport {
@@ -9,9 +11,7 @@ impl OSDPCommand for IDReport {
     }
 
     fn build_command_data(&self) -> Vec<u8> {
-        vec![
-            0x00
-        ]
+        vec![0x00]
     }
 }
 
@@ -21,8 +21,7 @@ impl OSDPCommand for LocalStatusReport {
     }
 
     fn build_command_data(&self) -> Vec<u8> {
-        vec![
-        ]
+        vec![]
     }
 }
 
@@ -32,8 +31,7 @@ impl OSDPCommand for InputStatusReport {
     }
 
     fn build_command_data(&self) -> Vec<u8> {
-        vec![
-        ]
+        vec![]
     }
 }
 
@@ -43,8 +41,7 @@ impl OSDPCommand for OutputStatusReport {
     }
 
     fn build_command_data(&self) -> Vec<u8> {
-        vec![
-        ]
+        vec![]
     }
 }
 
@@ -54,7 +51,6 @@ impl OSDPCommand for ReaderStatusReport {
     }
 
     fn build_command_data(&self) -> Vec<u8> {
-        vec![
-        ]
+        vec![]
     }
 }

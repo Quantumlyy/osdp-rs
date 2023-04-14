@@ -6,6 +6,6 @@ pub struct KeepReaderActive {
 
 impl KeepReaderActive {
     pub fn new(keep_active_time: u16) -> Self {
-        Self {keep_active_time}
+        Self { keep_active_time }
     }
 }

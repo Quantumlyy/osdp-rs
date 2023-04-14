@@ -5,7 +5,7 @@ use crate::models::errors::length::InvalidLengthError;
 #[repr(u8)]
 pub enum ToneCode {
     /// No tone (off).
-    /// 
+    ///
     /// # Note
     /// Use of this value is deprecated. Use `ToneCode::Off` instead.
     #[deprecated]
@@ -19,7 +19,7 @@ pub enum ToneCode {
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct BuzzerControlState {
     /// The reader number.
-    /// 
+    ///
     /// # Example
     /// - `0x00` = first reader
     /// - `0x01` = second reader
@@ -27,7 +27,7 @@ pub struct BuzzerControlState {
     pub reader_number: u8,
     pub tone_code: ToneCode,
     /// The ON duration of the sound, in units of 100ms.
-    /// 
+    ///
     /// # Note
     /// Must be non-zero unless `tone_code` is `ToneCode::Off`.
     pub on_time: u8,

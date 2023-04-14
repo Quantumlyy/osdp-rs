@@ -6,6 +6,8 @@ pub struct ACUReceiveSize {
 
 impl ACUReceiveSize {
     pub fn new(acu_max_receive_buffer: u16) -> Self {
-        Self {acu_max_receive_buffer}
+        Self {
+            acu_max_receive_buffer,
+        }
     }
 }

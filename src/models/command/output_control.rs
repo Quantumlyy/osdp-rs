@@ -25,7 +25,7 @@ pub enum OutputControlCode {
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct OutputState {
     /// The output number.
-    /// 
+    ///
     /// # Example
     /// - `0x00` = first output
     /// - `0x01` = second output
