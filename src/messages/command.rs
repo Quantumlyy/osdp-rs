@@ -90,9 +90,13 @@ pub trait OSDPCommand {
         let header = self.build_command_header(device);
         let data = self.build_command_data();
 
-        let mut command = vec![];
-        command.extend(header);
-        command.extend(data);
+        let header_length = header.len();
+        let data_length = data.len();
+        let packet_length = header_length + data_length + (if device.crc() { 2 } else { 1 });
+
+        let mut command = vec![0x00; packet_length];
+        command.splice(0..header_length, header);
+        command.splice(header_length..(header_length + data_length), data);
 
         let command_length = command.len().to_be_bytes();
         command[2] = command_length[0];
