@@ -15,7 +15,6 @@ pub enum ToneCode {
     DefaultTone = 0x02,
 }
 
-/// `osdp_BUZZ`
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct BuzzerControlState {
     /// The reader number.
@@ -38,6 +37,7 @@ pub struct BuzzerControlState {
     pub count: u8,
 }
 
+/// `osdp_BUZZ`
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct ReaderBuzzerControl<'a> {
     pub buzzer_states: &'a [BuzzerControlState],
