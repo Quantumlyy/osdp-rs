@@ -4,6 +4,7 @@ pub mod biometric;
 pub mod buzzer;
 pub mod keep_reader_active;
 pub mod led;
+pub mod mfg;
 pub mod output_control;
 pub mod peripheral_device_capabilities;
 pub mod poll;

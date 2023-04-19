@@ -28,7 +28,7 @@
  - [x] osdp_KEYSET
  - [ ] osdp_CHLNG
  - [ ] osdp_SCRYPT
- - [ ] osdp_MFG
+ - [x] osdp_MFG
  - [x] osdp_ACURXSIZE
  - [x] osdp_KEEPACTIVE
  - [x] osdp_ABORT
