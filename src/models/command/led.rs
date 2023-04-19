@@ -39,7 +39,7 @@ pub enum LEDColor {
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct ReaderLEDControlState {
     /// The reader number.
-    pub reader: u8,
+    pub reader_number: u8,
     /// The LED number.
     ///  - `0x00` = first LED
     ///  - `0x01` = second LED
@@ -96,7 +96,7 @@ impl ReaderLEDControlState {
     /// * `permanent_on_color` - The color set during the ON time.
     /// * `permanent_off_color` - The color set during the OFF time.
     pub fn new(
-        reader: u8,
+        reader_number: u8,
         led: u8,
         temporary_control_code: LEDTemporaryControlCode,
         temporary_on_time: u8,
@@ -111,7 +111,7 @@ impl ReaderLEDControlState {
         permanent_off_color: LEDColor,
     ) -> Self {
         Self {
-            reader,
+            reader_number,
             led,
             temporary_control_code,
             temporary_on_time,

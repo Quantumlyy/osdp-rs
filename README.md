@@ -19,7 +19,7 @@
  - [x] osdp_OSTAT
  - [x] osdp_RSTAT
  - [x] osdp_OUT
- - [ ] osdp_LED
+ - [x] osdp_LED
  - [x] osdp_BUZ
  - [ ] osdp_TEXT
  - [ ] osdp_COMSET
