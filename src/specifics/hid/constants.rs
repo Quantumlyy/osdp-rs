@@ -1,0 +1,3 @@
+pub const HID_I_CLASS_MFG_FIRST_OCTET: u8 = 0x00;
+pub const HID_I_CLASS_MFG_SECOND_OCTET: u8 = 0x06;
+pub const HID_I_CLASS_MFG_THIRD_OCTET: u8 = 0x8E;
