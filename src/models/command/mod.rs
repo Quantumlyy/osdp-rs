@@ -2,6 +2,7 @@ pub mod abort;
 pub mod acu_receive_size;
 pub mod biometric;
 pub mod buzzer;
+pub mod communication_configuration;
 pub mod keep_reader_active;
 pub mod led;
 pub mod mfg;

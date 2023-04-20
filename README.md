@@ -22,7 +22,7 @@
  - [x] osdp_LED
  - [x] osdp_BUZ
  - [ ] osdp_TEXT
- - [ ] osdp_COMSET
+ - [x] osdp_COMSET
  - [x] osdp_BIOREAD
  - [x] osdp_BIOMATCH
  - [x] osdp_KEYSET
