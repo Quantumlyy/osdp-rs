@@ -1,3 +1,5 @@
+use crate::models::reply::acknowledge::GeneralAcknowledge;
+
 #[derive(Debug, Default, Clone, Copy)]
 #[repr(u8)]
 pub enum ReplyType {
@@ -46,4 +48,16 @@ pub enum ReplyType {
     ManufactureSpecific = 0x90,
     /// osdp_XRD - extended read reply
     ExtendedRead = 0xB1,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum ReplyData {
+    ACK(GeneralAcknowledge)
+}
+
+pub trait OSDPReply {
+    /// The reply type.
+    fn rply(&self) -> ReplyType;
+
+    fn deserialize(data: &[u8]) -> Self;
 }
