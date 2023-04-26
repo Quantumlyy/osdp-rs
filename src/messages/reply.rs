@@ -1,4 +1,4 @@
-use crate::models::reply::acknowledge::GeneralAcknowledge;
+use crate::models::reply::acknowledge::{GeneralAcknowledge, NegativeAcknowledge};
 
 #[derive(Debug, Default, Clone, Copy)]
 #[repr(u8)]
@@ -50,9 +50,10 @@ pub enum ReplyType {
     ExtendedRead = 0xB1,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum ReplyData {
-    ACK(GeneralAcknowledge)
+    ACK(GeneralAcknowledge),
+    NAK(NegativeAcknowledge)
 }
 
 pub trait OSDPReply {

@@ -1,4 +1,4 @@
-use crate::models::reply::acknowledge::GeneralAcknowledge;
+use crate::models::reply::acknowledge::{GeneralAcknowledge, NegativeAcknowledge};
 
 use super::reply::{ReplyType, ReplyData, OSDPReply};
 
@@ -14,7 +14,7 @@ impl ReplyPacket {
 
         match self.reply_type {
             ReplyType::Ack => ReplyData::ACK(GeneralAcknowledge::deserialize(buffer)),
-            ReplyType::Nak => todo!(),
+            ReplyType::Nak => ReplyData::NAK(NegativeAcknowledge::deserialize(buffer)),
             ReplyType::PdIdReport => todo!(),
             ReplyType::PdCapabilitiesReport => todo!(),
             ReplyType::LocalStatusReport => todo!(),
