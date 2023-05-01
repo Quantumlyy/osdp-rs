@@ -10,20 +10,6 @@ mod tests {
     #[test]
     fn calculate_checksum_test() {
         assert_eq!(
-            0x44,
-            calculate_checksum(&vec![
-                0x53, // SOM
-                0x00, // addr
-                0x08, // len LSB
-                0x00, // len MSB
-                0x00, // control
-                0x61, // cmd
-                0x00, // data
-                0x00, // checksum
-            ])
-        );
-
-        assert_eq!(
             0x0F,
             calculate_checksum(&vec![
                 0x53, // SOM
@@ -37,7 +23,19 @@ mod tests {
                 0x25, // data
                 0x00, // data
                 0x00, // data
-                0x00, // checksum
+            ])
+        );
+
+        assert_eq!(
+            0x44,
+            calculate_checksum(&vec![
+                0x53, // SOM
+                0x00, // addr
+                0x08, // len LSB
+                0x00, // len MSB
+                0x00, // control
+                0x61, // cmd
+                0x00, // data
             ])
         );
     }
