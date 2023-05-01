@@ -3,6 +3,7 @@ pub trait Device {
     fn addr(&self) -> u8;
 
     fn sqn(&self) -> u8;
+    /// Determines if the CRC is present in the message.
     fn crc(&self) -> bool;
     /// Determines if the Security Control Block is present in the message.
     fn scb(&self) -> bool;

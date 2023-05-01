@@ -80,8 +80,9 @@ pub trait OSDPCommand {
     }
 
     fn attach_command_checksum(&self, command: &mut Vec<u8>) {
-        let checksum = crate::utils::checksum::calculate_checksum(command);
-        command.push(checksum);
+        let len = command.len();
+        let checksum: u8 = crate::utils::checksum::calculate_checksum(command);
+        command[len - 1] = checksum;
     }
 
     fn build_command_modify(&self, _command: &mut Vec<u8>) {}
