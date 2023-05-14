@@ -1,6 +1,6 @@
 use std::vec;
 
-use crate::{constants::SOM, hw::device::Device};
+use crate::{constants::SOM, hw::device::Device, utils::{checksum::calculate_checksum, crc::calculate_crc}};
 
 #[derive(Debug, Default, Clone, Copy)]
 #[repr(u8)]
@@ -80,8 +80,14 @@ pub trait OSDPCommand {
     }
 
     fn attach_command_checksum(&self, command: &mut Vec<u8>) {
-        let checksum: u8 = crate::utils::checksum::calculate_checksum(command);
+        let checksum: u8 = calculate_checksum(command);
         command.push(checksum);
+    }
+
+    fn attach_command_crc(&self, command: &mut Vec<u8>) {
+        let crc: [u8; 2] = calculate_crc(command);
+        command.push(crc[0]);
+        command.push(crc[1]);
     }
 
     fn build_command_modify(&self, _command: &mut Vec<u8>) {}
@@ -104,6 +110,7 @@ pub trait OSDPCommand {
         command[3] = command_length_bytes[1];
 
         if device.crc() {
+            self.attach_command_crc(&mut command);
         } else {
             self.attach_command_checksum(&mut command);
         }
