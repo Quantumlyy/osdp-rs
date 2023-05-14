@@ -11,7 +11,7 @@ impl OSDPCommand for ReaderLEDControl<'_> {
     fn build_command_data(&self) -> Vec<u8> {
         self.led_states
             .iter()
-            .map(|lcs| {
+            .flat_map(|lcs| {
                 let temporary_timer_bytes = lcs.temporary_timer.to_le_bytes();
 
                 [
@@ -31,7 +31,6 @@ impl OSDPCommand for ReaderLEDControl<'_> {
                     lcs.permanent_off_color as u8,
                 ]
             })
-            .flatten()
             .collect::<Vec<u8>>()
     }
 }

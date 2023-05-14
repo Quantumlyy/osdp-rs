@@ -23,7 +23,7 @@ pub const CRC_TABLE: [u16; 256] = [
     0x2E93, 0x3EB2, 0x0ED1, 0x1EF0,
 ];
 
-pub fn calculate_crc(packet: &Vec<u8>) -> [u8; 2] {
+pub fn calculate_crc(packet: &[u8]) -> [u8; 2] {
     let mut crc: u16 = 0x1D0F;
 
     for &b in packet.iter() {

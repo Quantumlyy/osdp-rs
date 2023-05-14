@@ -1,17 +1,11 @@
 use num_derive::FromPrimitive;
 
 /// `osdp_ACK`
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Default)]
 pub struct GeneralAcknowledge {}
 
 impl GeneralAcknowledge {
     pub fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Default for GeneralAcknowledge {
-    fn default() -> Self {
         Self {}
     }
 }

@@ -48,7 +48,7 @@ impl<'a> ReaderBuzzerControl<'a> {
     ///
     /// * `buzzer_states` - The buzzer control states.
     pub fn new(buzzer_states: &'a [BuzzerControlState]) -> Result<Self, InvalidLengthError> {
-        if buzzer_states.len() == 0 {
+        if buzzer_states.is_empty() {
             return Err(InvalidLengthError::new_minimum(1));
         }
 

@@ -11,7 +11,7 @@ impl OSDPCommand for OutputControl<'_> {
     fn build_command_data(&self) -> Vec<u8> {
         self.output_states
             .iter()
-            .map(|os| {
+            .flat_map(|os| {
                 let timer_bytes = os.timer.to_le_bytes();
                 [
                     os.output_number,
@@ -20,7 +20,6 @@ impl OSDPCommand for OutputControl<'_> {
                     timer_bytes[1],
                 ]
             })
-            .flatten()
             .collect::<Vec<u8>>()
     }
 }

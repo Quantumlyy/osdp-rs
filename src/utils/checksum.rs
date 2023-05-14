@@ -1,4 +1,4 @@
-pub fn calculate_checksum(packet: &Vec<u8>) -> u8 {
+pub fn calculate_checksum(packet: &[u8]) -> u8 {
     let sum: u16 = packet.iter().map(|&byte| byte as u16).sum();
     (!(sum & 0xFF) + 1) as u8
 }

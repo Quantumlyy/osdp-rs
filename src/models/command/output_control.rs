@@ -48,7 +48,7 @@ impl<'a> OutputControl<'a> {
     ///
     /// * `output_states` - The output states.
     pub fn new(output_states: &'a [OutputState]) -> Result<Self, InvalidLengthError> {
-        if output_states.len() == 0 {
+        if output_states.is_empty() {
             return Err(InvalidLengthError::new_minimum(1));
         }
 

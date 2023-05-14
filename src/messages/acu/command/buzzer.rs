@@ -11,7 +11,7 @@ impl OSDPCommand for ReaderBuzzerControl<'_> {
     fn build_command_data(&self) -> Vec<u8> {
         self.buzzer_states
             .iter()
-            .map(|bcs| {
+            .flat_map(|bcs| {
                 [
                     bcs.reader_number,
                     bcs.tone_code as u8,
@@ -20,7 +20,6 @@ impl OSDPCommand for ReaderBuzzerControl<'_> {
                     bcs.count,
                 ]
             })
-            .flatten()
             .collect::<Vec<u8>>()
     }
 }

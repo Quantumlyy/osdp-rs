@@ -84,12 +84,12 @@ pub trait OSDPCommand {
     }
 
     fn attach_command_checksum(&self, command: &mut Vec<u8>) {
-        let checksum: u8 = calculate_checksum(command);
+        let checksum: u8 = calculate_checksum(command.as_slice());
         command.push(checksum);
     }
 
     fn attach_command_crc(&self, command: &mut Vec<u8>) {
-        let crc: [u8; 2] = calculate_crc(command);
+        let crc: [u8; 2] = calculate_crc(command.as_slice());
         command.push(crc[0]);
         command.push(crc[1]);
     }

@@ -139,7 +139,7 @@ impl<'a> ReaderLEDControl<'a> {
     ///
     /// * `led_states` - The LED states to control.
     pub fn new(led_states: &'a [ReaderLEDControlState]) -> Result<Self, InvalidLengthError> {
-        if led_states.len() == 0 {
+        if led_states.is_empty() {
             return Err(InvalidLengthError::new_minimum(1));
         }
 
