@@ -11,7 +11,7 @@ pub struct ManufacturerSpecificCommand<'a> {
 
 impl<'a> ManufacturerSpecificCommand<'a> {
     /// # Arguments
-    /// 
+    ///
     /// * `vendor_code_1` - IEEE assigned OUI, "first octet".
     /// * `vendor_code_2` - IEEE assigned OUI, "second octet".
     /// * `vendor_code_3` - IEEE assigned OUI, "third octet".

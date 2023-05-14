@@ -29,24 +29,18 @@ pub enum NegativeAcknowledgeErrorCode {
     EncryptedCommunicationRequired = 0x06,
     BioTypeNotSupported = 0x07,
     BioFormatNotSupported = 0x08,
-    UnableToProcessCommand = 0x09
+    UnableToProcessCommand = 0x09,
 }
 
 /// `osdp_NAK`
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct NegativeAcknowledge {
     pub error_code: NegativeAcknowledgeErrorCode,
-    pub data: Vec<u8>
+    pub data: Vec<u8>,
 }
 
 impl NegativeAcknowledge {
-    pub fn new(
-        error_code: NegativeAcknowledgeErrorCode,
-        data: Vec<u8>
-    ) -> Self {
-        Self {
-            error_code,
-            data
-        }
+    pub fn new(error_code: NegativeAcknowledgeErrorCode, data: Vec<u8>) -> Self {
+        Self { error_code, data }
     }
 }

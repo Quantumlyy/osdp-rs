@@ -53,7 +53,7 @@ pub enum ReplyType {
 #[derive(Debug, Clone)]
 pub enum ReplyData {
     ACK(GeneralAcknowledge),
-    NAK(NegativeAcknowledge)
+    NAK(NegativeAcknowledge),
 }
 
 pub trait OSDPReply {

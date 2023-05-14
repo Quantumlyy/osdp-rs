@@ -1,6 +1,6 @@
 use crate::models::reply::acknowledge::{GeneralAcknowledge, NegativeAcknowledge};
 
-use super::reply::{ReplyType, ReplyData, OSDPReply};
+use super::reply::{OSDPReply, ReplyData, ReplyType};
 
 pub struct ReplyPacket {
     pub reply_type: ReplyType,
@@ -34,7 +34,7 @@ impl ReplyPacket {
             ReplyType::PIVData => todo!(),
             ReplyType::ResponseToChallenge => todo!(),
             ReplyType::ManufactureSpecific => todo!(),
-            ReplyType::ExtendedRead => todo!(), 
+            ReplyType::ExtendedRead => todo!(),
         }
     }
 }

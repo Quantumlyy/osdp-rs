@@ -40,10 +40,7 @@ mod tests {
     #[test]
     fn calculate_crc_test() {
         assert_eq!(
-            [
-                0x6E,
-                0x38,
-            ],
+            [0x6E, 0x38,],
             calculate_crc(&vec![
                 0x53, // SOM
                 0x7F, // addr
@@ -62,10 +59,7 @@ mod tests {
         );
 
         assert_eq!(
-            [
-                0xC0,
-                0x66,
-            ],
+            [0xC0, 0x66,],
             calculate_crc(&vec![
                 0x53, // SOM
                 0x00, // addr

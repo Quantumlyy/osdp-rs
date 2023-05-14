@@ -1,6 +1,10 @@
 use std::vec;
 
-use crate::{constants::SOM, hw::device::Device, utils::{checksum::calculate_checksum, crc::calculate_crc}};
+use crate::{
+    constants::SOM,
+    hw::device::Device,
+    utils::{checksum::calculate_checksum, crc::calculate_crc},
+};
 
 #[derive(Debug, Default, Clone, Copy)]
 #[repr(u8)]

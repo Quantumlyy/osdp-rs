@@ -17,7 +17,6 @@ impl OSDPCommand for ReaderLEDControl<'_> {
                 [
                     lcs.reader_number,
                     lcs.led,
-
                     lcs.temporary_control_code as u8,
                     lcs.temporary_on_time,
                     lcs.temporary_off_time,
@@ -25,7 +24,6 @@ impl OSDPCommand for ReaderLEDControl<'_> {
                     lcs.temporary_off_color as u8,
                     temporary_timer_bytes[0],
                     temporary_timer_bytes[1],
-
                     lcs.permanent_control_code as u8,
                     lcs.permanent_on_time,
                     lcs.permanent_off_time,
