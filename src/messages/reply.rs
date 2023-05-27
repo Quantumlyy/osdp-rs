@@ -1,4 +1,4 @@
-use crate::models::reply::acknowledge::{GeneralAcknowledge, NegativeAcknowledge};
+use crate::models::reply::{acknowledge::{GeneralAcknowledge, NegativeAcknowledge}, report::DeviceIdentificationReport};
 
 #[derive(Debug, Default, Clone, Copy)]
 #[repr(u8)]
@@ -54,6 +54,7 @@ pub enum ReplyType {
 pub enum ReplyData {
     ACK(GeneralAcknowledge),
     NAK(NegativeAcknowledge),
+    PDID(DeviceIdentificationReport)
 }
 
 pub trait OSDPReply {

@@ -1,4 +1,4 @@
-use crate::models::reply::acknowledge::{GeneralAcknowledge, NegativeAcknowledge};
+use crate::models::reply::{acknowledge::{GeneralAcknowledge, NegativeAcknowledge}, report::DeviceIdentificationReport};
 
 use super::reply::{OSDPReply, ReplyData, ReplyType};
 
@@ -15,7 +15,7 @@ impl ReplyPacket {
         match self.reply_type {
             ReplyType::Ack => ReplyData::ACK(GeneralAcknowledge::deserialize(buffer)),
             ReplyType::Nak => ReplyData::NAK(NegativeAcknowledge::deserialize(buffer)),
-            ReplyType::PdIdReport => todo!(),
+            ReplyType::PdIdReport => ReplyData::PDID(DeviceIdentificationReport::deserialize(buffer)),
             ReplyType::PdCapabilitiesReport => todo!(),
             ReplyType::LocalStatusReport => todo!(),
             ReplyType::InputStatusReport => todo!(),
