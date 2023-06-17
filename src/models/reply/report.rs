@@ -76,3 +76,28 @@ impl DeviceCapabilitiesReport {
         Self { capabilities }
     }
 }
+
+/// `osdp_LSTATR`
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct LocalStatusReport {
+    /// Status of the tamper circuit
+    ///
+    /// - `0x00` - normal
+    /// - `0x01` - tamper
+    pub tamper: u8,
+    /// Status of the power circuit
+    ///
+    /// - `0x00` - normal
+    /// - `0x01` - power failure
+    pub power: u8,
+}
+
+impl LocalStatusReport {
+    /// # Arguments
+    ///
+    /// * `tamper` - Status of the tamper circuit
+    /// * `power` - Status of the power circuit
+    pub fn new(tamper: u8, power: u8) -> Self {
+        Self { tamper, power }
+    }
+}

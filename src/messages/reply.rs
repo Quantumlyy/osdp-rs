@@ -2,7 +2,7 @@ use thiserror::Error;
 
 use crate::models::reply::{
     acknowledge::{GeneralAcknowledge, NegativeAcknowledge},
-    report::{DeviceCapabilitiesReport, DeviceIdentificationReport},
+    report::{DeviceCapabilitiesReport, DeviceIdentificationReport, LocalStatusReport},
 };
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -73,6 +73,7 @@ pub enum ReplyData {
     NAK(NegativeAcknowledge),
     PDID(DeviceIdentificationReport),
     PDCAP(DeviceCapabilitiesReport),
+    LSTATR(LocalStatusReport),
 }
 
 pub trait OSDPReply {

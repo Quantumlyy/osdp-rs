@@ -1,7 +1,7 @@
 use crate::{
     messages::reply::{OSDPReply, ReplyDeserializationError, ReplyType},
     models::reply::report::{
-        DeviceCapabilitiesReport, DeviceCapability, DeviceIdentificationReport,
+        DeviceCapabilitiesReport, DeviceCapability, DeviceIdentificationReport, LocalStatusReport,
     },
 };
 
@@ -59,5 +59,26 @@ impl OSDPReply for DeviceCapabilitiesReport {
             .collect::<Vec<DeviceCapability>>();
 
         Ok(Self::new(capabilities))
+    }
+}
+
+impl OSDPReply for LocalStatusReport {
+    fn rply(&self) -> ReplyType {
+        ReplyType::LocalStatusReport
+    }
+
+    fn deserialize(data: &[u8]) -> Result<LocalStatusReport, ReplyDeserializationError> {
+        let sized_data: &[u8; 2] = match data.try_into() {
+            Ok(data) => data,
+            Err(_) => {
+                return Err(ReplyDeserializationError::InvalidPacketSize {
+                    minimum: 2,
+                    maximum: 2,
+                    received: data.len(),
+                })
+            }
+        };
+
+        Ok(Self::new(sized_data[0], sized_data[1]))
     }
 }
