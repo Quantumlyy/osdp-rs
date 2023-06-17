@@ -51,3 +51,28 @@ impl DeviceIdentificationReport {
         }
     }
 }
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct DeviceCapability {
+    /// Function code
+    pub function_code: u8,
+    /// Compliance level
+    pub compliance: u8,
+    /// Number of
+    pub number_of: u8,
+}
+
+/// `osdp_PDCAP`
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct DeviceCapabilitiesReport {
+    pub capabilities: Vec<DeviceCapability>,
+}
+
+impl DeviceCapabilitiesReport {
+    /// # Arguments
+    ///
+    /// * `capabilities` - The device capabilities.
+    pub fn new(capabilities: Vec<DeviceCapability>) -> Self {
+        Self { capabilities }
+    }
+}

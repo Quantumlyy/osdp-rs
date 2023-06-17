@@ -1,6 +1,8 @@
 use crate::{
     messages::reply::{OSDPReply, ReplyDeserializationError, ReplyType},
-    models::reply::report::DeviceIdentificationReport,
+    models::reply::report::{
+        DeviceCapabilitiesReport, DeviceCapability, DeviceIdentificationReport,
+    },
 };
 
 impl OSDPReply for DeviceIdentificationReport {
@@ -12,7 +14,7 @@ impl OSDPReply for DeviceIdentificationReport {
         let sized_data: &[u8; 12] = match data.try_into() {
             Ok(data) => data,
             Err(_) => {
-                return Err(ReplyDeserializationError::InvalidPacketSizeError {
+                return Err(ReplyDeserializationError::InvalidPacketSize {
                     minimum: 12,
                     maximum: 12,
                     received: data.len(),
@@ -31,5 +33,31 @@ impl OSDPReply for DeviceIdentificationReport {
             u32::from_le_bytes(*sized_serial_numbers),
             *sized_firmware_revision_numbers,
         ))
+    }
+}
+
+impl OSDPReply for DeviceCapabilitiesReport {
+    fn rply(&self) -> ReplyType {
+        ReplyType::PdCapabilitiesReport
+    }
+
+    fn deserialize(data: &[u8]) -> Result<DeviceCapabilitiesReport, ReplyDeserializationError> {
+        if data.len() % 3 != 0 {
+            return Err(ReplyDeserializationError::InvalidDataWindowSize {
+                multiple: 3,
+                received: data.len(),
+            });
+        }
+
+        let capabilities = data
+            .windows(3)
+            .map(|window| DeviceCapability {
+                function_code: window[0],
+                compliance: window[1],
+                number_of: window[2],
+            })
+            .collect::<Vec<DeviceCapability>>();
+
+        Ok(Self::new(capabilities))
     }
 }

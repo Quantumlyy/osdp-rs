@@ -1,6 +1,6 @@
 use crate::models::reply::{
     acknowledge::{GeneralAcknowledge, NegativeAcknowledge},
-    report::DeviceIdentificationReport,
+    report::{DeviceCapabilitiesReport, DeviceIdentificationReport},
 };
 
 use super::reply::{OSDPReply, ReplyData, ReplyDeserializationError, ReplyType};
@@ -25,7 +25,9 @@ impl ReplyPacket {
             ReplyType::Ack => deserialize_to_enum!(GeneralAcknowledge, ACK, buffer),
             ReplyType::Nak => deserialize_to_enum!(NegativeAcknowledge, NAK, buffer),
             ReplyType::PdIdReport => deserialize_to_enum!(DeviceIdentificationReport, PDID, buffer),
-            ReplyType::PdCapabilitiesReport => todo!(),
+            ReplyType::PdCapabilitiesReport => {
+                deserialize_to_enum!(DeviceCapabilitiesReport, PDCAP, buffer)
+            }
             ReplyType::LocalStatusReport => todo!(),
             ReplyType::InputStatusReport => todo!(),
             ReplyType::OutputStatusReport => todo!(),

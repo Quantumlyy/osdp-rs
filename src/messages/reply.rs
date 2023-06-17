@@ -2,7 +2,7 @@ use thiserror::Error;
 
 use crate::models::reply::{
     acknowledge::{GeneralAcknowledge, NegativeAcknowledge},
-    report::DeviceIdentificationReport,
+    report::{DeviceCapabilitiesReport, DeviceIdentificationReport},
 };
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -58,11 +58,13 @@ pub enum ReplyType {
 #[derive(Error, Debug)]
 pub enum ReplyDeserializationError {
     #[error("invalid length: {minimum}..{maximum} (received: {received})")]
-    InvalidPacketSizeError {
+    InvalidPacketSize {
         minimum: usize,
         maximum: usize,
         received: usize,
     },
+    #[error("invalid data multiple: {multiple} (received: {received} which is not within the range of {received}/{multiple})")]
+    InvalidDataWindowSize { multiple: usize, received: usize },
 }
 
 #[derive(Debug, Clone)]
@@ -70,6 +72,7 @@ pub enum ReplyData {
     ACK(GeneralAcknowledge),
     NAK(NegativeAcknowledge),
     PDID(DeviceIdentificationReport),
+    PDCAP(DeviceCapabilitiesReport),
 }
 
 pub trait OSDPReply {
