@@ -1,6 +1,9 @@
 use thiserror::Error;
 
-use crate::models::reply::{acknowledge::{GeneralAcknowledge, NegativeAcknowledge}, report::DeviceIdentificationReport};
+use crate::models::reply::{
+    acknowledge::{GeneralAcknowledge, NegativeAcknowledge},
+    report::DeviceIdentificationReport,
+};
 
 #[derive(Debug, Default, Clone, Copy)]
 #[repr(u8)]
@@ -59,19 +62,21 @@ pub enum ReplyDeserializationError {
         minimum: usize,
         maximum: usize,
         received: usize,
-    }
+    },
 }
 
 #[derive(Debug, Clone)]
 pub enum ReplyData {
     ACK(GeneralAcknowledge),
     NAK(NegativeAcknowledge),
-    PDID(DeviceIdentificationReport)
+    PDID(DeviceIdentificationReport),
 }
 
 pub trait OSDPReply {
     /// The reply type.
     fn rply(&self) -> ReplyType;
 
-    fn deserialize(data: &[u8]) -> Result<Self, ReplyDeserializationError> where Self: Sized;
+    fn deserialize(data: &[u8]) -> Result<Self, ReplyDeserializationError>
+    where
+        Self: Sized;
 }

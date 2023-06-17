@@ -41,7 +41,7 @@ mod tests {
     fn calculate_crc_test() {
         assert_eq!(
             [0x6E, 0x38,],
-            calculate_crc(&vec![
+            calculate_crc(&[
                 0x53, // SOM
                 0x7F, // addr
                 0x0D, // len LSB
@@ -54,13 +54,13 @@ mod tests {
                 0x00, // data
                 0x00, // data
                 0x00, // crc
-                0x00, // crc
+                0x00
             ])
         );
 
         assert_eq!(
             [0xC0, 0x66,],
-            calculate_crc(&vec![
+            calculate_crc(&[
                 0x53, // SOM
                 0x00, // addr
                 0x09, // len LSB
@@ -69,7 +69,7 @@ mod tests {
                 0x61, // cmd
                 0x00, // data
                 0x00, // crc
-                0x00, // crc
+                0x00
             ])
         );
     }
