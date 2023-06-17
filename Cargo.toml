@@ -1,6 +1,6 @@
 [package]
 name = "osdp"
-version = "0.1.21"
+version = "0.1.22"
 description = "Rust implementation of the Open Supervised Device Protocol (OSDP)"
 license = "BSD-3-Clause"
 
@@ -18,3 +18,4 @@ hid-iclass-osdp-v2 = []
 [dependencies]
 num-traits = "0.2"
 num-derive = "0.3"
+thiserror = "1.0.40"

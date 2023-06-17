@@ -1,3 +1,5 @@
+use thiserror::Error;
+
 use crate::models::reply::{acknowledge::{GeneralAcknowledge, NegativeAcknowledge}, report::DeviceIdentificationReport};
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -50,6 +52,16 @@ pub enum ReplyType {
     ExtendedRead = 0xB1,
 }
 
+#[derive(Error, Debug)]
+pub enum ReplyDeserializationError {
+    #[error("invalid length: {minimum}..{maximum} (received: {received})")]
+    InvalidPacketSizeError {
+        minimum: usize,
+        maximum: usize,
+        received: usize,
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum ReplyData {
     ACK(GeneralAcknowledge),
@@ -61,5 +73,5 @@ pub trait OSDPReply {
     /// The reply type.
     fn rply(&self) -> ReplyType;
 
-    fn deserialize(data: &[u8]) -> Self;
+    fn deserialize(data: &[u8]) -> Result<Self, ReplyDeserializationError> where Self: Sized;
 }
