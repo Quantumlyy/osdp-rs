@@ -1,5 +1,6 @@
 use crate::models::reply::{
     acknowledge::{GeneralAcknowledge, NegativeAcknowledge},
+    card::CardRawDataReport,
     report::{DeviceCapabilitiesReport, DeviceIdentificationReport, LocalStatusReport},
 };
 
@@ -32,7 +33,7 @@ impl ReplyPacket {
             ReplyType::InputStatusReport => todo!(),
             ReplyType::OutputStatusReport => todo!(),
             ReplyType::ReaderStatusReport => todo!(),
-            ReplyType::RawReaderData => todo!(),
+            ReplyType::RawReaderData => deserialize_to_enum!(CardRawDataReport, RAW, buffer),
             ReplyType::FormattedReaderData => todo!(),
             ReplyType::KeypadData => todo!(),
             ReplyType::PdCommunicationsConfigurationReport => todo!(),

@@ -2,6 +2,7 @@ use thiserror::Error;
 
 use crate::models::reply::{
     acknowledge::{GeneralAcknowledge, NegativeAcknowledge},
+    card::CardRawDataReport,
     report::{DeviceCapabilitiesReport, DeviceIdentificationReport, LocalStatusReport},
 };
 
@@ -74,6 +75,7 @@ pub enum ReplyData {
     PDID(DeviceIdentificationReport),
     PDCAP(DeviceCapabilitiesReport),
     LSTATR(LocalStatusReport),
+    RAW(CardRawDataReport),
 }
 
 pub trait OSDPReply {

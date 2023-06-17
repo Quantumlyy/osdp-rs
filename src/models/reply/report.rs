@@ -1,5 +1,5 @@
 /// `osdp_PDID`
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct DeviceIdentificationReport {
     /// IEEE assigned OUI, "first octet".
     pub vendor_code_1: u8,
@@ -52,7 +52,7 @@ impl DeviceIdentificationReport {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct DeviceCapability {
     /// Function code
     pub function_code: u8,
@@ -78,7 +78,7 @@ impl DeviceCapabilitiesReport {
 }
 
 /// `osdp_LSTATR`
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct LocalStatusReport {
     /// Status of the tamper circuit
     ///
