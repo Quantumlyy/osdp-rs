@@ -37,3 +37,31 @@
  - [ ] osdp_CRAUTH
  - [ ] osdp_FILETRANSFER
  - [ ] osdp_XWR
+
+## Replies
+
+### Reply data parsing
+
+ - [x] osdp_ACK
+ - [x] osdp_NAK
+ - [x] osdp_PDID
+ - [x] osdp_PDCAP
+ - [x] osdp_LSTATR
+ - [ ] osdp_ISTATR
+ - [ ] osdp_OSTATR
+ - [x] osdp_RAW
+ - [ ] osdp_FMT
+ - [ ] osdp_KEYPAD
+ - [ ] osdp_COM
+ - [ ] osdp_BIOREADR
+ - [ ] osdp_BIOMATCHR
+ - [ ] osdp_CCRYPT
+ - [ ] osdp_RMAC_I
+ - [ ] osdp_MFGREP
+ - [ ] osdp_BUSY
+ - [ ] osdp_PIVDATAR
+ - [ ] osdp_GENAUTHR
+ - [ ] osdp_MFGSTATR
+ - [ ] osdp_MFGERRR
+ - [ ] osdp_FSTAT
+ - [ ] osdp_XRD
