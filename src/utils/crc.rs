@@ -53,8 +53,8 @@ mod tests {
                 0x25, // data
                 0x00, // data
                 0x00, // data
-                0x00, // crc
-                0x00
+                // 0x00, // crc
+                // 0x00, // crc
             ])
         );
 
@@ -68,8 +68,8 @@ mod tests {
                 0x04, // control
                 0x61, // cmd
                 0x00, // data
-                0x00, // crc
-                0x00
+                // 0x00, // crc
+                // 0x00, // crc
             ])
         );
     }

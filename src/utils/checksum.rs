@@ -22,7 +22,7 @@ mod tests {
                 0x80, // data
                 0x25, // data
                 0x00, // data
-                0x00
+                // 0x00, // checksum
             ])
         );
 
@@ -35,7 +35,7 @@ mod tests {
                 0x00, // len MSB
                 0x00, // control
                 0x61, // cmd
-                0x00
+                // 0x00, // checksum
             ])
         );
     }
