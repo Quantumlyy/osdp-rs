@@ -4,6 +4,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/osdp)](https://crates.io/crates/osdp)
 [![Documentation](https://docs.rs/osdp/badge.svg)](https://docs.rs/osdp)
+[![codecov](https://codecov.io/gh/Quantumlyy/osdp-rs/branch/main/graph/badge.svg?token=JqE6bJHcU1)](https://codecov.io/gh/Quantumlyy/osdp-rs)
 
 # Implementation
 
