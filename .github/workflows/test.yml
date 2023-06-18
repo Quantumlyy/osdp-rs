@@ -14,7 +14,7 @@ env:
 
 jobs:
   coverage:
-    name: Run testts with coverage
+    name: Run tests with coverage
     runs-on: ubuntu-latest
     env:
       CARGO_TERM_COLOR: always
@@ -28,9 +28,6 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          override: true
-          profile: minimal
-          components: clippy, rustfmt
       - name: Cache rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
