@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["LEDColor","LEDPermanentControlCode","LEDTemporaryControlCode"],"struct":["ReaderLEDControl","ReaderLEDControlState"]};

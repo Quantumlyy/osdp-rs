@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["abort","acu_receive_size","biometric","buzzer","communication_configuration","keep_reader_active","led","mfg","output_control","peripheral_device_capabilities","poll","report","secure_channel_configuration"]};

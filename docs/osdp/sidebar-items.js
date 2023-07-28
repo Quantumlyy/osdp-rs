@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["constants","hw","messages","models","specifics","utils"]};
