@@ -1,0 +1,35 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+    branches:
+      - main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install latest nightly
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        override: true
+    - name: Build docs
+      run: cargo rustdoc --lib -- --enable-index-page -Z unstable-options
+    - name: Push docs
+      run: rm -rf docs && mv target/doc docs
+    - name: Commit changes
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: "[GitHub] Updating docs [skip ci]"
+        commit_user_name: GitHub Actions
+        commit_user_email: noreply@github.com
+        commit_author: GitHub Actions <noreply@github.com>
+        file_pattern: '*-manifests/*.yml'
