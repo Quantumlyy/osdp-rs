@@ -32,4 +32,4 @@ jobs:
         commit_user_name: GitHub Actions
         commit_user_email: noreply@github.com
         commit_author: GitHub Actions <noreply@github.com>
-        file_pattern: '*-manifests/*.yml'
+        file_pattern: 'docs/**'
