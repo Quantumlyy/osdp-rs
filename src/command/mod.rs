@@ -84,26 +84,26 @@ impl CommandCode {
     }
 }
 
-mod abort;
-mod acu_rx_size;
-mod biometric;
-mod buzzer;
-mod cap;
-mod chlng;
-mod comset;
-mod file_transfer;
-mod id;
-mod keep_active;
-mod keyset;
-mod led;
-mod local_status;
-mod mfg;
-mod output;
-mod piv;
-mod poll;
-mod scrypt;
-mod text;
-mod xwrite;
+pub mod abort;
+pub mod acu_rx_size;
+pub mod biometric;
+pub mod buzzer;
+pub mod cap;
+pub mod chlng;
+pub mod comset;
+pub mod file_transfer;
+pub mod id;
+pub mod keep_active;
+pub mod keyset;
+pub mod led;
+pub mod local_status;
+pub mod mfg;
+pub mod output;
+pub mod piv;
+pub mod poll;
+pub mod scrypt;
+pub mod text;
+pub mod xwrite;
 
 pub use abort::Abort;
 pub use acu_rx_size::AcuRxSize;

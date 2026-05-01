@@ -23,6 +23,7 @@ pub trait PdHandler {
 /// PD driver.
 pub struct Pd<T: Transport, C: Clock, H: PdHandler> {
     transport: T,
+    #[allow(dead_code)]
     clock: C,
     /// PD's own bus address.
     pub address: u8,
@@ -49,6 +50,11 @@ impl<T: Transport, C: Clock, H: PdHandler> Pd<T, C, H> {
             last_sqn: None,
             last_reply: None,
         }
+    }
+
+    /// Borrow the underlying transport.
+    pub fn transport(&mut self) -> &mut T {
+        &mut self.transport
     }
 
     /// Drain whatever bytes the transport has, dispatch the next complete
@@ -124,7 +130,7 @@ impl<T: Transport, C: Clock, H: PdHandler> Pd<T, C, H> {
 mod tests {
     use super::*;
     use crate::clock::MockClock;
-    use crate::command::{Command, Poll};
+    use crate::command::Command;
     use crate::reply::{Ack, Reply};
     use crate::transport::VecTransport;
 
@@ -151,7 +157,7 @@ mod tests {
         transport.feed(&bytes);
         let mut pd = Pd::new(transport, clock, 0x05, AlwaysAck);
         assert!(pd.poll_once().unwrap());
-        let reply_bytes: Vec<u8> = pd.transport.outgoing.drain(..).collect();
+        let reply_bytes: Vec<u8> = pd.transport().outgoing.drain(..).collect();
         let (parsed, _) = ParsedPacket::parse(&reply_bytes).unwrap();
         assert_eq!(parsed.code, 0x40);
         assert!(parsed.addr.is_reply());

@@ -38,11 +38,9 @@ impl OutputControlCode {
             0x04 => Self::PermanentOnAllowTimed,
             0x05 => Self::TemporaryOnResume,
             0x06 => Self::TemporaryOffResume,
-            other => return Err(Error::MalformedPayload {
+            _ => return Err(Error::MalformedPayload {
                 code: 0x68,
-                reason: match other {
-                    _ => "unknown output control code",
-                },
+                reason: "unknown output control code",
             }),
         })
     }

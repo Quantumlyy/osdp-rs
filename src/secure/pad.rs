@@ -16,7 +16,7 @@ pub fn pad_mac(buf: &mut alloc::vec::Vec<u8>) {
     buf.push(0x80);
     let need = 16 - ((rem + 1) % 16);
     if need != 16 {
-        buf.extend(core::iter::repeat(0u8).take(need));
+        buf.extend(core::iter::repeat_n(0u8, need));
     }
 }
 
@@ -25,7 +25,7 @@ pub fn pad_data(buf: &mut alloc::vec::Vec<u8>) {
     buf.push(0x80);
     let rem = buf.len() % 16;
     if rem != 0 {
-        buf.extend(core::iter::repeat(0u8).take(16 - rem));
+        buf.extend(core::iter::repeat_n(0u8, 16 - rem));
     }
 }
 

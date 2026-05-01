@@ -223,10 +223,10 @@ mod alloc_impls {
         #[test]
         fn split_then_assemble() {
             let body: Vec<u8> = (0u16..1024).flat_map(|n| n.to_le_bytes()).collect();
-            let mut tx = MultipartTx::new(&body, 200).unwrap();
+            let tx = MultipartTx::new(&body, 200).unwrap();
             let mut rx = MultipartRx::new();
             let mut out = None;
-            while let Some((h, frag)) = tx.next() {
+            for (h, frag) in tx {
                 if let Some(v) = rx.push(h, frag).unwrap() {
                     out = Some(v);
                 }

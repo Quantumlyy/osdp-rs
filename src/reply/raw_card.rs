@@ -26,7 +26,7 @@ pub struct Raw {
 impl Raw {
     /// Encode.
     pub fn encode(&self) -> Result<Vec<u8>, Error> {
-        let need = ((self.bit_count as usize) + 7) / 8;
+        let need = (self.bit_count as usize).div_ceil(8);
         if self.bits.len() != need {
             return Err(Error::MalformedPayload {
                 code: 0x50,
@@ -50,7 +50,7 @@ impl Raw {
             });
         }
         let bit_count = u16::from_le_bytes([data[2], data[3]]);
-        let need = ((bit_count as usize) + 7) / 8;
+        let need = (bit_count as usize).div_ceil(8);
         if data.len() != 4 + need {
             return Err(Error::MalformedPayload {
                 code: 0x50,

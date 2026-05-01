@@ -78,27 +78,27 @@ impl ReplyCode {
     }
 }
 
-mod ack;
-mod bio;
-mod busy;
-mod ccrypt;
-mod com;
-mod crauth;
-mod ft_stat;
-mod genauth;
-mod istat;
-mod keypad;
-mod lstat;
-mod mfg;
-mod nak;
-mod ostat;
-mod pdcap;
-mod pdid;
-mod piv;
-mod raw_card;
-mod rmac_i;
-mod rstat;
-mod xrd;
+pub mod ack;
+pub mod bio;
+pub mod busy;
+pub mod ccrypt;
+pub mod com;
+pub mod crauth;
+pub mod ft_stat;
+pub mod genauth;
+pub mod istat;
+pub mod keypad;
+pub mod lstat;
+pub mod mfg;
+pub mod nak;
+pub mod ostat;
+pub mod pdcap;
+pub mod pdid;
+pub mod piv;
+pub mod raw_card;
+pub mod rmac_i;
+pub mod rstat;
+pub mod xrd;
 
 pub use ack::Ack;
 pub use bio::{BioMatchR, BioReadR};
