@@ -1,0 +1,56 @@
+//! `osdp_KEYPAD` (`0x53`) — keypad data.
+//!
+//! # Spec: §7.12
+
+use crate::error::Error;
+use alloc::vec::Vec;
+
+/// `osdp_KEYPAD` body.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Keypad {
+    /// Reader number.
+    pub reader: u8,
+    /// Number of digits in `digits`.
+    pub digit_count: u8,
+    /// Digits (ASCII; `0x7F` = clear, `0x0D` = enter).
+    pub digits: Vec<u8>,
+}
+
+impl Keypad {
+    /// Encode.
+    pub fn encode(&self) -> Result<Vec<u8>, Error> {
+        if self.digits.len() != self.digit_count as usize {
+            return Err(Error::MalformedPayload {
+                code: 0x53,
+                reason: "KEYPAD digit_count disagrees with digits",
+            });
+        }
+        let mut out = Vec::with_capacity(2 + self.digits.len());
+        out.push(self.reader);
+        out.push(self.digit_count);
+        out.extend_from_slice(&self.digits);
+        Ok(out)
+    }
+
+    /// Decode.
+    pub fn decode(data: &[u8]) -> Result<Self, Error> {
+        if data.len() < 2 {
+            return Err(Error::MalformedPayload {
+                code: 0x53,
+                reason: "KEYPAD requires at least 2 bytes",
+            });
+        }
+        let digit_count = data[1];
+        if data.len() != 2 + digit_count as usize {
+            return Err(Error::MalformedPayload {
+                code: 0x53,
+                reason: "KEYPAD digit count disagrees with payload",
+            });
+        }
+        Ok(Self {
+            reader: data[0],
+            digit_count,
+            digits: data[2..].to_vec(),
+        })
+    }
+}
