@@ -106,34 +106,47 @@ Security Industry Association's
 | Secure channel: CBC-MAC w/ rolling ICV + S-MAC1/S-MAC2 swap | ✓ |
 | Secure channel: 0x80-padding (MAC + DATA rules) | ✓ |
 | Secure channel: type-state `Session<S>` | ✓ |
-| AES-128-CBC DATA encryption (SCS_17/18) | partial — primitives present |
+| AES-128-CBC DATA encryption (SCS_17/18) | ✓ — `Session::seal_data` / `open_data`, plus `secure::frame::seal`/`unseal` |
 | ACU driver with SQN cycling and reply-delay enforcement | ✓ |
-| ACU driver retry / off-line / BUSY handling | partial |
+| ACU driver retry / off-line / BUSY handling | ✓ — see `Acu::exchange` + `RetryConfig` |
 | PD driver with command dispatch + reply-repeat semantics | ✓ |
+| `embedded-io` transport adapter | ✓ — `transport::EmbeddedIoTransport` |
 | Async transport (`embedded-io-async`) | future |
 | Serial-port adapter (`osdp-serial` companion crate) | future |
+| Chaos-bus testing (plan §6 Layer 3) | ✓ — `tests/chaos_bus.rs` |
 
 ## Quick start
 
 ```rust
 use osdp::clock::SystemClock;
 use osdp::command::{Command, Poll};
-use osdp::driver::acu::{Acu, PdState};
+use osdp::driver::acu::{Acu, ExchangeOutcome, PdState};
+use osdp::reply::Reply;
 use osdp::transport::VecTransport;
 
 let mut acu = Acu::new(VecTransport::new(), SystemClock::new());
 let mut pd = PdState::default();
-let bytes = acu.send_to(0x05, &mut pd, &Command::Poll(Poll))?;
-// ...feed `bytes` to your RS-485 transceiver.
+match acu.exchange(0x05, &mut pd, &Command::Poll(Poll))? {
+    ExchangeOutcome::Reply(Reply::Ack(_)) => println!("PD alive"),
+    ExchangeOutcome::Busy => println!("retry later"),
+    ExchangeOutcome::Timeout => println!("missed reply"),
+    ExchangeOutcome::Offline => println!("declared off-line"),
+    _ => {}
+}
 # Ok::<(), osdp::Error>(())
 ```
+
+For the secure-channel walk, see `examples/handshake.rs`. For an end-to-end
+loopback that exercises SQN cycling, see `examples/loopback_poll.rs`.
 
 ## Testing
 
 ```sh
-cargo test                              # 72 unit + 10 integration tests
+cargo test                              # 71 unit + 14 integration tests
 cargo test --no-default-features        # `no_std` slice still compiles
 cargo clippy --all-targets --all-features
+cargo run --example loopback_poll
+cargo run --example handshake
 ```
 
 ## License

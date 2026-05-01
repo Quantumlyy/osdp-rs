@@ -201,6 +201,25 @@ impl Session<Secure> {
     pub fn last_other_mac(&self) -> &[u8; 16] {
         &self.last_their_mac
     }
+
+    /// Encrypt `data` for an `SCS_17`/`SCS_18` payload using the current ICV
+    /// (`!last_other_mac`). Returns the ciphertext (always padded to a 16-byte
+    /// multiple).
+    ///
+    /// # Spec: Annex D.5
+    pub fn seal_data(&self, data: &[u8]) -> alloc::vec::Vec<u8> {
+        let iv = crate::secure::cipher::complement_icv(&self.last_their_mac);
+        crate::secure::cipher::encrypt_data(&self.keys.s_enc, &iv, data)
+    }
+
+    /// Decrypt a payload received in an `SCS_17`/`SCS_18` packet, validating
+    /// the 0x80 padding.
+    ///
+    /// # Spec: Annex D.5
+    pub fn open_data(&self, ct: &[u8]) -> Result<alloc::vec::Vec<u8>, SecureSessionError> {
+        let iv = crate::secure::cipher::complement_icv(&self.last_their_mac);
+        crate::secure::cipher::decrypt_data(&self.keys.s_enc, &iv, ct)
+    }
 }
 
 #[cfg(test)]

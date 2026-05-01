@@ -10,12 +10,15 @@
 //!
 //! Padding is described in [`pad`].
 
+pub mod cipher;
 pub mod crypto;
+pub mod frame;
 pub mod mac;
 pub mod pad;
 pub mod session;
 
-pub use session::{Disconnected, Cryptogrammed, Challenged, Secure, Session};
+pub use frame::{seal, unseal, Direction};
+pub use session::{Challenged, Cryptogrammed, Disconnected, Secure, Session};
 
 /// Default install key (`SCBK-D`): bytes `0x30..=0x3F`.
 ///

@@ -42,12 +42,17 @@ impl Clock for SystemClock {
 }
 
 /// Manually-driven `Clock` for tests.
+///
+/// Shares its underlying counter across clones via [`alloc::sync::Arc`], so
+/// a clone handed to a driver and the original held by a test refer to the
+/// *same* time value.
+#[cfg(feature = "alloc")]
 #[derive(Debug, Default, Clone)]
 pub struct MockClock {
-    /// Current time in milliseconds.
-    pub now: core::cell::Cell<u64>,
+    inner: alloc::sync::Arc<core::sync::atomic::AtomicU64>,
 }
 
+#[cfg(feature = "alloc")]
 impl MockClock {
     /// New clock at `t = 0`.
     pub fn new() -> Self {
@@ -56,18 +61,21 @@ impl MockClock {
 
     /// Advance the clock by `ms` milliseconds.
     pub fn advance(&self, ms: u64) {
-        self.now.set(self.now.get() + ms);
+        self.inner
+            .fetch_add(ms, core::sync::atomic::Ordering::Relaxed);
     }
 
     /// Set the clock to `ms` milliseconds.
     pub fn set(&self, ms: u64) {
-        self.now.set(ms);
+        self.inner
+            .store(ms, core::sync::atomic::Ordering::Relaxed);
     }
 }
 
+#[cfg(feature = "alloc")]
 impl Clock for MockClock {
     fn now_ms(&self) -> u64 {
-        self.now.get()
+        self.inner.load(core::sync::atomic::Ordering::Relaxed)
     }
 }
 
