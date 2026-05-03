@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["CRC_TABLE"],"fn":["calculate_crc"]};

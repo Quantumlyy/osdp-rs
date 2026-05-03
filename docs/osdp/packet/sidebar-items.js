@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["HEADER_LEN","MAC_LEN"],"enum":["ScsType","Trailer"],"fn":["checksum8","crc16","crc16_le"],"struct":["Address","ControlByte","CtrlFlags","PacketBuilder","ParsedPacket","Scb","ScbView","Sqn"],"type":["Packet"]};
