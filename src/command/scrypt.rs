@@ -17,7 +17,9 @@ pub struct SCrypt {
 impl SCrypt {
     /// New.
     pub const fn new(c: [u8; 16]) -> Self {
-        Self { server_cryptogram: c }
+        Self {
+            server_cryptogram: c,
+        }
     }
 
     /// Encode.
@@ -35,6 +37,8 @@ impl SCrypt {
         }
         let mut c = [0u8; 16];
         c.copy_from_slice(data);
-        Ok(Self { server_cryptogram: c })
+        Ok(Self {
+            server_cryptogram: c,
+        })
     }
 }

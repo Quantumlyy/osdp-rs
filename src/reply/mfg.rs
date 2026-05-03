@@ -48,6 +48,14 @@ macro_rules! oui_plus_payload {
     };
 }
 
-oui_plus_payload!(MfgStatR, 0x83, "`osdp_MFGSTATR` body — manufacturer status reply.");
-oui_plus_payload!(MfgErrR, 0x84, "`osdp_MFGERRR` body — manufacturer error reply.");
+oui_plus_payload!(
+    MfgStatR,
+    0x83,
+    "`osdp_MFGSTATR` body — manufacturer status reply."
+);
+oui_plus_payload!(
+    MfgErrR,
+    0x84,
+    "`osdp_MFGERRR` body — manufacturer error reply."
+);
 oui_plus_payload!(MfgRep, 0x90, "`osdp_MFGREP` body — manufacturer reply.");

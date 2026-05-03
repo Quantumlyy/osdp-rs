@@ -65,10 +65,7 @@ impl ScsType {
     ///
     /// # Spec: §5.9
     pub const fn has_mac(self) -> bool {
-        matches!(
-            self,
-            Self::Scs15 | Self::Scs16 | Self::Scs17 | Self::Scs18
-        )
+        matches!(self, Self::Scs15 | Self::Scs16 | Self::Scs17 | Self::Scs18)
     }
 
     /// `true` if this SCS implies the DATA payload is AES-CBC encrypted.
@@ -78,10 +75,7 @@ impl ScsType {
 
     /// `true` if this SCS is part of the handshake (no DATA encryption, no MAC).
     pub const fn is_handshake(self) -> bool {
-        matches!(
-            self,
-            Self::Scs11 | Self::Scs12 | Self::Scs13 | Self::Scs14
-        )
+        matches!(self, Self::Scs11 | Self::Scs12 | Self::Scs13 | Self::Scs14)
     }
 }
 
@@ -222,10 +216,20 @@ mod tests {
 
     #[test]
     fn mac_predicate() {
-        for ty in [ScsType::Scs15, ScsType::Scs16, ScsType::Scs17, ScsType::Scs18] {
+        for ty in [
+            ScsType::Scs15,
+            ScsType::Scs16,
+            ScsType::Scs17,
+            ScsType::Scs18,
+        ] {
             assert!(ty.has_mac());
         }
-        for ty in [ScsType::Scs11, ScsType::Scs12, ScsType::Scs13, ScsType::Scs14] {
+        for ty in [
+            ScsType::Scs11,
+            ScsType::Scs12,
+            ScsType::Scs13,
+            ScsType::Scs14,
+        ] {
             assert!(!ty.has_mac());
         }
     }

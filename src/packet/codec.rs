@@ -10,13 +10,13 @@
 //! +------+------+---------+---------+------+========+======+----+======+
 //! ```
 
+use crate::SOM;
 use crate::error::Error;
 use crate::packet::checksum::checksum8;
 use crate::packet::crc::crc16;
 use crate::packet::header::{Address, ControlByte};
 use crate::packet::scb::ScbView;
 use crate::packet::trailer::Trailer;
-use crate::SOM;
 
 /// Length of the fixed OSDP header (SOM, ADDR, LEN_LSB, LEN_MSB, CTRL).
 pub const HEADER_LEN: usize = 5;
@@ -105,13 +105,14 @@ impl<'a> ParsedPacket<'a> {
         let mac_present = scb.map(|s| s.ty.has_mac()).unwrap_or(false);
         let mac_room = if mac_present { MAC_LEN } else { 0 };
 
-        let payload_end = frame
-            .len()
-            .checked_sub(trailer_len + mac_room)
-            .ok_or(Error::BadLength {
-                declared: len,
-                actual: frame.len(),
-            })?;
+        let payload_end =
+            frame
+                .len()
+                .checked_sub(trailer_len + mac_room)
+                .ok_or(Error::BadLength {
+                    declared: len,
+                    actual: frame.len(),
+                })?;
         if payload_end < cursor {
             return Err(Error::BadLength {
                 declared: len,
@@ -228,11 +229,7 @@ mod alloc_impls {
             if scb_present != self.scb.is_some() {
                 return Err(Error::BadControlByte(self.ctrl.encode()));
             }
-            let mac_required = self
-                .scb
-                .as_ref()
-                .map(|s| s.ty.has_mac())
-                .unwrap_or(false);
+            let mac_required = self.scb.as_ref().map(|s| s.ty.has_mac()).unwrap_or(false);
             if mac_required && mac_fn.is_none() {
                 return Err(Error::BadMac);
             }
@@ -393,7 +390,10 @@ mod tests {
     #[test]
     fn rejects_truncated() {
         let bytes = [0x53u8, 0x01];
-        assert!(matches!(ParsedPacket::parse(&bytes), Err(Error::Truncated { .. })));
+        assert!(matches!(
+            ParsedPacket::parse(&bytes),
+            Err(Error::Truncated { .. })
+        ));
     }
 
     #[test]
@@ -401,7 +401,10 @@ mod tests {
         let mut bytes = make_poll(1, 1);
         let n = bytes.len();
         bytes[n - 1] ^= 0xFF;
-        assert!(matches!(ParsedPacket::parse(&bytes), Err(Error::BadCrc { .. })));
+        assert!(matches!(
+            ParsedPacket::parse(&bytes),
+            Err(Error::BadCrc { .. })
+        ));
     }
 
     #[test]
@@ -416,7 +419,10 @@ mod tests {
         .unwrap();
         let n = bytes.len();
         bytes[n - 1] ^= 0xFF;
-        assert!(matches!(ParsedPacket::parse(&bytes), Err(Error::BadChecksum { .. })));
+        assert!(matches!(
+            ParsedPacket::parse(&bytes),
+            Err(Error::BadChecksum { .. })
+        ));
     }
 
     #[test]
@@ -426,7 +432,9 @@ mod tests {
             let mut x = seed.wrapping_mul(0x9E37_79B9_7F4A_7C15);
             let mut buf = [0u8; 64];
             for b in buf.iter_mut() {
-                x = x.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+                x = x
+                    .wrapping_mul(6364136223846793005)
+                    .wrapping_add(1442695040888963407);
                 *b = (x >> 33) as u8;
             }
             let _ = ParsedPacket::parse(&buf);

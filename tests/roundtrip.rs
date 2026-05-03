@@ -8,15 +8,13 @@
 
 use osdp::caps::Capability;
 use osdp::command::{
-    AcuRxSize, BioFormat, BioMatch, BioRead, BioType, BuzzerControl, BuzzerTone, Command, ComSet,
-    Id, KeySet, KeepActive, OutputControl, OutputControlCode,
+    AcuRxSize, BioFormat, BioMatch, BioRead, BioType, BuzzerControl, BuzzerTone, ComSet, Command,
+    Id, KeepActive, KeySet, OutputControl, OutputControlCode,
 };
-use osdp::packet::{
-    Address, ControlByte, CtrlFlags, PacketBuilder, ParsedPacket, Sqn,
-};
+use osdp::packet::{Address, ControlByte, CtrlFlags, PacketBuilder, ParsedPacket, Sqn};
 use osdp::reply::{
-    Ack, BioMatchR, BioReadR, Busy, CCrypt, Com, FtStat, IStatR, LStatR, Nak, NakErrorCode,
-    OStatR, PdCap, PdId, RMacI, RStatR, Raw, Reply,
+    Ack, BioMatchR, BioReadR, Busy, CCrypt, Com, FtStat, IStatR, LStatR, Nak, NakErrorCode, OStatR,
+    PdCap, PdId, RMacI, RStatR, Raw, Reply,
 };
 use proptest::prelude::*;
 
@@ -40,23 +38,28 @@ mod arb {
             Just(Command::InputStatus(osdp::command::InputStatus)),
             Just(Command::OutputStatus(osdp::command::OutputStatus)),
             Just(Command::ReaderStatus(osdp::command::ReaderStatus)),
-            (any::<u8>(), any::<u8>(), any::<u16>())
-                .prop_map(|(o, c, t)| Command::Output(OutputControl::new(alloc::vec![
-                    osdp::command::output::OutputRecord {
-                        output: o,
-                        code: match c % 7 {
-                            0 => OutputControlCode::Nop,
-                            1 => OutputControlCode::PermanentOffAbortTimed,
-                            2 => OutputControlCode::PermanentOnAbortTimed,
-                            3 => OutputControlCode::PermanentOffAllowTimed,
-                            4 => OutputControlCode::PermanentOnAllowTimed,
-                            5 => OutputControlCode::TemporaryOnResume,
-                            _ => OutputControlCode::TemporaryOffResume,
-                        },
-                        timer: t,
-                    }
-                ]))),
-            (any::<u8>(), any::<u8>(), any::<u8>(), any::<u8>(), any::<u8>())
+            (any::<u8>(), any::<u8>(), any::<u16>()).prop_map(|(o, c, t)| Command::Output(
+                OutputControl::new(alloc::vec![osdp::command::output::OutputRecord {
+                    output: o,
+                    code: match c % 7 {
+                        0 => OutputControlCode::Nop,
+                        1 => OutputControlCode::PermanentOffAbortTimed,
+                        2 => OutputControlCode::PermanentOnAbortTimed,
+                        3 => OutputControlCode::PermanentOffAllowTimed,
+                        4 => OutputControlCode::PermanentOnAllowTimed,
+                        5 => OutputControlCode::TemporaryOnResume,
+                        _ => OutputControlCode::TemporaryOffResume,
+                    },
+                    timer: t,
+                }])
+            )),
+            (
+                any::<u8>(),
+                any::<u8>(),
+                any::<u8>(),
+                any::<u8>(),
+                any::<u8>()
+            )
                 .prop_map(|(r, t, on, off, c)| Command::Buzzer(BuzzerControl {
                     reader: r,
                     tone: match t % 3 {
@@ -75,14 +78,21 @@ mod arb {
             any::<[u8; 16]>().prop_map(|k| Command::KeySet(KeySet::scbk(k))),
             any::<u16>().prop_map(|m| Command::AcuRxSize(AcuRxSize { max_size: m })),
             any::<u16>().prop_map(|d| Command::KeepActive(KeepActive { duration_ms: d })),
-            (any::<u8>(), any::<u8>(), any::<u8>(), any::<u8>())
-                .prop_map(|(r, t, f, q)| Command::BioRead(BioRead {
+            (any::<u8>(), any::<u8>(), any::<u8>(), any::<u8>()).prop_map(|(r, t, f, q)| {
+                Command::BioRead(BioRead {
                     reader: r,
                     bio_type: BioType::from_byte(t),
                     bio_format: BioFormat::from_byte(f),
                     quality: q,
-                })),
-            (any::<u8>(), any::<u8>(), any::<u8>(), any::<u8>(), prop::collection::vec(any::<u8>(), 0..16))
+                })
+            }),
+            (
+                any::<u8>(),
+                any::<u8>(),
+                any::<u8>(),
+                any::<u8>(),
+                prop::collection::vec(any::<u8>(), 0..16)
+            )
                 .prop_map(|(r, t, f, q, tpl)| Command::BioMatch(BioMatch {
                     reader: r,
                     bio_type: BioType::from_byte(t),
@@ -109,7 +119,13 @@ mod arb {
                 8 => NakErrorCode::BioFormatNotSupported,
                 _ => NakErrorCode::UnableToProcessCommandRecord,
             }))),
-            (any::<[u8; 3]>(), any::<u8>(), any::<u8>(), any::<u32>(), any::<[u8; 3]>())
+            (
+                any::<[u8; 3]>(),
+                any::<u8>(),
+                any::<u8>(),
+                any::<u32>(),
+                any::<[u8; 3]>()
+            )
                 .prop_map(|(o, m, v, s, fw)| Reply::PdId(PdId {
                     vendor_oui: o,
                     model: m,
@@ -117,50 +133,58 @@ mod arb {
                     serial: s,
                     firmware: fw,
                 })),
-            prop::collection::vec(any::<[u8; 3]>(), 0..16)
-                .prop_map(|caps| Reply::PdCap(PdCap::new(
-                    caps.into_iter()
-                        .map(Capability::decode)
-                        .collect()
-                ))),
-            (any::<u8>(), any::<u8>())
-                .prop_map(|(t, p)| Reply::LStatR(LStatR { tamper: t, power: p })),
+            prop::collection::vec(any::<[u8; 3]>(), 0..16).prop_map(|caps| Reply::PdCap(
+                PdCap::new(caps.into_iter().map(Capability::decode).collect())
+            )),
+            (any::<u8>(), any::<u8>()).prop_map(|(t, p)| Reply::LStatR(LStatR {
+                tamper: t,
+                power: p
+            })),
             prop::collection::vec(any::<u8>(), 0..16)
                 .prop_map(|i| Reply::IStatR(IStatR { inputs: i })),
             prop::collection::vec(any::<u8>(), 0..16)
                 .prop_map(|o| Reply::OStatR(OStatR { outputs: o })),
             prop::collection::vec(any::<u8>(), 0..16)
                 .prop_map(|r| Reply::RStatR(RStatR { readers: r })),
-            (any::<u8>(), any::<u8>(), 0u16..=64u16)
-                .prop_map(|(r, fc, bc)| Reply::Raw(Raw {
-                    reader: r,
-                    format_code: fc,
-                    bit_count: bc,
-                    bits: alloc::vec![0u8; (bc as usize).div_ceil(8)],
-                })),
-            (0u8..=0x7Eu8, any::<u32>()).prop_map(|(a, b)| Reply::Com(Com { address: a, baud: b })),
-            (any::<u8>(), any::<u8>(), any::<u8>())
-                .prop_map(|(r, m, s)| Reply::BioMatchR(BioMatchR {
+            (any::<u8>(), any::<u8>(), 0u16..=64u16).prop_map(|(r, fc, bc)| Reply::Raw(Raw {
+                reader: r,
+                format_code: fc,
+                bit_count: bc,
+                bits: alloc::vec![0u8; (bc as usize).div_ceil(8)],
+            })),
+            (0u8..=0x7Eu8, any::<u32>()).prop_map(|(a, b)| Reply::Com(Com {
+                address: a,
+                baud: b
+            })),
+            (any::<u8>(), any::<u8>(), any::<u8>()).prop_map(|(r, m, s)| Reply::BioMatchR(
+                BioMatchR {
                     reader: r,
                     result: m,
                     score: s,
-                })),
-            (any::<[u8; 8]>(), any::<[u8; 8]>(), any::<[u8; 16]>())
-                .prop_map(|(c, b, cc)| Reply::CCrypt(CCrypt {
+                }
+            )),
+            (any::<[u8; 8]>(), any::<[u8; 8]>(), any::<[u8; 16]>()).prop_map(|(c, b, cc)| {
+                Reply::CCrypt(CCrypt {
                     cuid: c,
                     rnd_b: b,
                     client_cryptogram: cc,
-                })),
+                })
+            }),
             any::<[u8; 16]>().prop_map(|m| Reply::RMacI(RMacI { r_mac_i: m })),
             Just(Reply::Busy(Busy)),
-            (any::<u8>(), any::<u16>(), any::<u16>(), any::<u16>())
-                .prop_map(|(s, d, p, f)| Reply::FtStat(FtStat {
+            (any::<u8>(), any::<u16>(), any::<u16>(), any::<u16>()).prop_map(|(s, d, p, f)| {
+                Reply::FtStat(FtStat {
                     status: s,
                     delay_ms: d,
                     preferred_size: p,
                     flags: f,
-                })),
-            (any::<u8>(), any::<u8>(), prop::collection::vec(any::<u8>(), 0..16))
+                })
+            }),
+            (
+                any::<u8>(),
+                any::<u8>(),
+                prop::collection::vec(any::<u8>(), 0..16)
+            )
                 .prop_map(|(r, q, d)| Reply::BioReadR(BioReadR {
                     reader: r,
                     bio_type: BioType::NotSpecified,
@@ -177,12 +201,22 @@ mod arb {
 
 extern crate alloc;
 
-fn build_packet(addr: u8, sqn: u8, code: u8, data: alloc::vec::Vec<u8>, use_crc: bool) -> alloc::vec::Vec<u8> {
+fn build_packet(
+    addr: u8,
+    sqn: u8,
+    code: u8,
+    data: alloc::vec::Vec<u8>,
+    use_crc: bool,
+) -> alloc::vec::Vec<u8> {
     PacketBuilder::plain(
         Address::pd(addr).unwrap(),
         ControlByte::new(
             Sqn::new(sqn).unwrap(),
-            if use_crc { CtrlFlags::USE_CRC } else { CtrlFlags::empty() },
+            if use_crc {
+                CtrlFlags::USE_CRC
+            } else {
+                CtrlFlags::empty()
+            },
         ),
         code,
         data,

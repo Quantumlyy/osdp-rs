@@ -32,10 +32,12 @@ impl TextCommand {
             0x02 => Self::PermanentWrap,
             0x03 => Self::TemporaryNoWrap,
             0x04 => Self::TemporaryWrap,
-            _ => return Err(Error::MalformedPayload {
-                code: 0x6B,
-                reason: "unknown TEXT command code",
-            }),
+            _ => {
+                return Err(Error::MalformedPayload {
+                    code: 0x6B,
+                    reason: "unknown TEXT command code",
+                });
+            }
         })
     }
 

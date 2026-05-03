@@ -16,8 +16,8 @@
 
 use osdp::reply::CCrypt;
 use osdp::secure::{
-    crypto::{client_cryptogram, SessionKeys},
-    Disconnected, Session, SCBK_D,
+    Disconnected, SCBK_D, Session,
+    crypto::{SessionKeys, client_cryptogram},
 };
 
 /// Each side of the handshake derives the same session keys when given the

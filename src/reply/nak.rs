@@ -39,10 +39,12 @@ impl NakErrorCode {
             0x07 => Self::BioTypeNotSupported,
             0x08 => Self::BioFormatNotSupported,
             0x09 => Self::UnableToProcessCommandRecord,
-            _ => return Err(Error::MalformedPayload {
-                code: 0x41,
-                reason: "unknown NAK error code",
-            }),
+            _ => {
+                return Err(Error::MalformedPayload {
+                    code: 0x41,
+                    reason: "unknown NAK error code",
+                });
+            }
         })
     }
 

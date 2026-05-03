@@ -10,7 +10,7 @@ mod scb;
 mod trailer;
 
 pub use checksum::checksum8;
-pub use codec::{ParsedPacket, HEADER_LEN, MAC_LEN};
+pub use codec::{HEADER_LEN, MAC_LEN, ParsedPacket};
 pub use crc::{crc16, crc16_le};
 pub use header::{Address, ControlByte, CtrlFlags, Sqn};
 pub use scb::{ScbView, ScsType};

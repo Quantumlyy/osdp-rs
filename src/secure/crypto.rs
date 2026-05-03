@@ -14,9 +14,9 @@
 //! - `ClientCryptogram = AES_S-ENC(RND.A || RND.B)`
 //! - `ServerCryptogram = AES_S-ENC(RND.B || RND.A)`
 
+use aes::Aes128;
 use aes::cipher::generic_array::GenericArray;
 use aes::cipher::{BlockDecrypt, BlockEncrypt, KeyInit};
-use aes::Aes128;
 
 /// 128-bit AES block.
 pub type Block = [u8; 16];

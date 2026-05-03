@@ -62,5 +62,4 @@ fn main() {
             other => println!("  [{round}] unexpected reply {other:?}"),
         }
     }
-
 }

@@ -7,9 +7,7 @@
 //! # Spec: Annex D.5
 
 use crate::error::{Error, SecureSessionError};
-use crate::packet::{
-    Address, ControlByte, CtrlFlags, PacketBuilder, ParsedPacket, Scb, ScsType,
-};
+use crate::packet::{Address, ControlByte, CtrlFlags, PacketBuilder, ParsedPacket, Scb, ScsType};
 use crate::secure::session::{Secure, Session};
 use alloc::vec::Vec;
 
@@ -79,7 +77,9 @@ pub fn unseal(
     parsed: &ParsedPacket<'_>,
     raw: &[u8],
 ) -> Result<Vec<u8>, Error> {
-    let scb = parsed.scb.ok_or(Error::SecureSession(SecureSessionError::NotSecure))?;
+    let scb = parsed
+        .scb
+        .ok_or(Error::SecureSession(SecureSessionError::NotSecure))?;
     if !scb.ty.has_mac() {
         return Err(Error::SecureSession(SecureSessionError::NotSecure));
     }
@@ -108,9 +108,9 @@ mod tests {
     use super::*;
     use crate::packet::Sqn;
     use crate::reply::CCrypt;
-    use crate::secure::crypto::{client_cryptogram, SessionKeys};
-    use crate::secure::session::{Disconnected, Session};
     use crate::secure::SCBK_D;
+    use crate::secure::crypto::{SessionKeys, client_cryptogram};
+    use crate::secure::session::{Disconnected, Session};
 
     fn handshake_pair() -> (Session<Secure>, Session<Secure>) {
         // ACU side

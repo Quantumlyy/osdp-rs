@@ -102,9 +102,7 @@ fn pd_repeats_reply_on_duplicate_sqn() {
     // that by rewinding state.next_sqn back to what it was.
     state.next_sqn = osdp::Sqn::new(0).unwrap();
 
-    let bytes_first = acu
-        .send_to(0x07, &mut state, &Command::Poll(Poll))
-        .unwrap();
+    let bytes_first = acu.send_to(0x07, &mut state, &Command::Poll(Poll)).unwrap();
     shuffle(acu.transport(), pd.transport());
     pd.poll_once().unwrap();
 

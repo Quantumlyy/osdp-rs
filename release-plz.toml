@@ -1,0 +1,53 @@
+[workspace]
+# Generate a CHANGELOG.md from conventional-style commit messages.
+changelog_update = true
+git_release_enable = true
+# Open one PR per crate when there are pending releases.
+pr_branch_prefix = "release-plz/"
+pr_labels = ["release"]
+# Don't publish until a maintainer merges the release PR.
+publish = true
+# Match crates.io semver: dependencies' versions get bumped automatically.
+dependencies_update = true
+
+[changelog]
+# Conventional Commits → human-readable changelog sections.
+header = """
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+"""
+body = """
+
+## [{{ version | trim_start_matches(pat="v") }}]\
+    {%- if release_link -%}\
+        ({{ release_link }})\
+    {% endif %} \
+    - {{ timestamp | date(format="%Y-%m-%d") }}
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | upper_first }}
+{% for commit in commits %}
+- {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
+    {% if commit.breaking %}[**breaking**] {% endif %}\
+    {{ commit.message | upper_first }}\
+{% endfor %}
+{% endfor %}
+"""
+commit_parsers = [
+    { message = "^feat", group = "Added" },
+    { message = "^add", group = "Added" },
+    { message = "^fix", group = "Fixed" },
+    { message = "^perf", group = "Performance" },
+    { message = "^refactor", group = "Changed" },
+    { message = "^docs", group = "Documentation" },
+    { message = "^test", group = "Testing" },
+    { message = "^chore\\(deps\\)", group = "Dependencies" },
+    { message = "^chore", skip = true },
+    { message = "^ci", skip = true },
+    { message = "^style", skip = true },
+    { body = ".*security", group = "Security" },
+]
+protect_breaking_commits = true

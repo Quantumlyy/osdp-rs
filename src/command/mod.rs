@@ -278,6 +278,9 @@ mod tests {
 
     #[test]
     fn unknown_byte_errors() {
-        assert!(matches!(CommandCode::from_byte(0xFF), Err(Error::UnknownCommand(0xFF))));
+        assert!(matches!(
+            CommandCode::from_byte(0xFF),
+            Err(Error::UnknownCommand(0xFF))
+        ));
     }
 }

@@ -326,9 +326,7 @@ mod tests {
         let transport = VecTransport::new();
         let mut acu = Acu::new(transport, clock);
         let mut pd = PdState::default();
-        let bytes = acu
-            .send_to(0x05, &mut pd, &Command::Poll(Poll))
-            .unwrap();
+        let bytes = acu.send_to(0x05, &mut pd, &Command::Poll(Poll)).unwrap();
         assert_eq!(bytes[0], crate::SOM);
         assert_eq!(bytes[1], 0x05);
         assert_eq!(bytes[4] & 0x0F, 0x04); // SQN=0, CRC=on
@@ -347,9 +345,7 @@ mod tests {
         // Pretend we'd seen the PD long ago.
         pd.mark_seen(0);
         clock.set(crate::OFFLINE_THRESHOLD_MS as u64 + 1);
-        let outcome = acu
-            .exchange(0x05, &mut pd, &Command::Poll(Poll))
-            .unwrap();
+        let outcome = acu.exchange(0x05, &mut pd, &Command::Poll(Poll)).unwrap();
         assert_eq!(outcome, ExchangeOutcome::Offline);
     }
 
@@ -367,9 +363,7 @@ mod tests {
         // Advance just enough that we're hitting the per-attempt budget but
         // not yet off-line.
         clock.set(crate::REPLY_DELAY_MS as u64 + 1);
-        let outcome = acu
-            .exchange(0x05, &mut pd, &Command::Poll(Poll))
-            .unwrap();
+        let outcome = acu.exchange(0x05, &mut pd, &Command::Poll(Poll)).unwrap();
         assert_eq!(outcome, ExchangeOutcome::Timeout);
     }
 }

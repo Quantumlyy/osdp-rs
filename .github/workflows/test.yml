@@ -5,40 +5,107 @@ on:
     branches:
       - main
   pull_request:
-    types: [ opened, synchronize, reopened ]
+    types: [opened, synchronize, reopened]
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-D warnings"
 
 jobs:
-  coverage:
-    name: Run tests with coverage
+  test:
+    name: cargo test (${{ matrix.toolchain }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain: [stable, beta, "1.85"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust ${{ matrix.toolchain }}
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - uses: Swatinem/rust-cache@v2
+      - name: Build (default features)
+        run: cargo build --verbose
+      - name: Test (default features)
+        run: cargo test --verbose
+      - name: Test (all features)
+        run: cargo test --all-features --verbose
+      - name: Build examples
+        run: cargo build --examples
+
+  no-default-features:
+    name: no_std build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Check (no default features)
+        run: cargo check --no-default-features --verbose
+      - name: Check (alloc only)
+        run: cargo check --no-default-features --features alloc --verbose
+      - name: Check (alloc + secure-channel)
+        run: cargo check --no-default-features --features "alloc,secure-channel" --verbose
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Clippy (all targets, all features)
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+  docs:
+    name: rustdoc
     runs-on: ubuntu-latest
     env:
-      CARGO_TERM_COLOR: always
-      LLVMCOV_VERSION: 0.5.14
+      RUSTDOCFLAGS: "-D warnings"
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: cargo doc
+        run: cargo doc --no-deps --all-features
+
+  fmt:
+    name: rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          submodules: 'true'
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+          components: rustfmt
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+  coverage:
+    name: coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-      - name: Cache rust dependencies
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: rust-cache-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}-${{ env.SQLX_VERSION }}-${{ env.LLVMCOV_VERSION }}
+          components: llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
       - name: Install cargo-llvm-cov
-        run: cargo install cargo-llvm-cov --version=${{ env.LLVMCOV_VERSION }} --locked
-      - name: Generate code coverage
-        run: cargo llvm-cov --all-features --lib --codecov --output-path codecov.json
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Generate coverage
+        run: cargo llvm-cov --all-features --workspace --codecov --output-path codecov.json
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: codecov.json
-          fail_ci_if_error: true
+          fail_ci_if_error: false

@@ -37,7 +37,10 @@ pub fn encrypt_data(s_enc: &[u8; 16], iv: &[u8; 16], data: &[u8]) -> Vec<u8> {
     pad_data(&mut buf);
     debug_assert_eq!(buf.len() % 16, 0);
 
-    let mut enc = Encryptor::new(GenericArray::from_slice(s_enc), GenericArray::from_slice(iv));
+    let mut enc = Encryptor::new(
+        GenericArray::from_slice(s_enc),
+        GenericArray::from_slice(iv),
+    );
     for chunk in buf.chunks_exact_mut(16) {
         let mut block = *GenericArray::from_slice(chunk);
         enc.encrypt_block_mut(&mut block);
@@ -59,7 +62,10 @@ pub fn decrypt_data(
         return Err(SecureSessionError::BadPadding);
     }
     let mut buf = ct.to_vec();
-    let mut dec = Decryptor::new(GenericArray::from_slice(s_enc), GenericArray::from_slice(iv));
+    let mut dec = Decryptor::new(
+        GenericArray::from_slice(s_enc),
+        GenericArray::from_slice(iv),
+    );
     for chunk in buf.chunks_exact_mut(16) {
         let mut block = *GenericArray::from_slice(chunk);
         dec.decrypt_block_mut(&mut block);

@@ -117,8 +117,8 @@ mod alloc_impls {
             if self.offset as usize >= self.body.len() {
                 return None;
             }
-            let take = (self.body.len() - self.offset as usize)
-                .min(self.fragment_size as usize) as u16;
+            let take =
+                (self.body.len() - self.offset as usize).min(self.fragment_size as usize) as u16;
             let frag = &self.body[self.offset as usize..self.offset as usize + take as usize];
             let header = MultipartHeader {
                 total: self.body.len() as u16,
@@ -169,9 +169,9 @@ mod alloc_impls {
             match self.total {
                 None => {
                     if header.offset != 0 {
-                        return Err(Error::Multipart(
-                            MultipartError::UnexpectedFirstOffset(header.offset),
-                        ));
+                        return Err(Error::Multipart(MultipartError::UnexpectedFirstOffset(
+                            header.offset,
+                        )));
                     }
                     self.total = Some(header.total);
                     self.buf.clear();

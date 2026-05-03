@@ -15,9 +15,7 @@
 
 use crate::error::SecureSessionError;
 use crate::reply::CCrypt;
-use crate::secure::crypto::{
-    client_cryptogram, initial_rmac, server_cryptogram, SessionKeys,
-};
+use crate::secure::crypto::{SessionKeys, client_cryptogram, initial_rmac, server_cryptogram};
 use crate::secure::mac::cbc_mac;
 use core::marker::PhantomData;
 use subtle::ConstantTimeEq;
@@ -131,7 +129,11 @@ impl Session<Cryptogrammed> {
 
     /// Initial R-MAC, computed from `S-MAC1`/`S-MAC2` over the server cryptogram.
     pub fn initial_rmac(&self) -> [u8; 16] {
-        initial_rmac(&self.keys.s_mac1, &self.keys.s_mac2, &self.server_cryptogram())
+        initial_rmac(
+            &self.keys.s_mac1,
+            &self.keys.s_mac2,
+            &self.server_cryptogram(),
+        )
     }
 
     /// PD echoed back our initial R-MAC; advance to fully [`Secure`].
@@ -177,14 +179,24 @@ impl Session<Secure> {
     ///
     /// `bytes` is the SOM..end-of-DATA region (as per [`super::mac::cbc_mac`]).
     pub fn mac(&mut self, bytes: &[u8]) -> [u8; 16] {
-        let mac = cbc_mac(bytes, &self.last_their_mac, &self.keys.s_mac1, &self.keys.s_mac2);
+        let mac = cbc_mac(
+            bytes,
+            &self.last_their_mac,
+            &self.keys.s_mac1,
+            &self.keys.s_mac2,
+        );
         self.last_their_mac = mac;
         mac
     }
 
     /// Verify a received MAC against our locally-computed value.
     pub fn verify(&mut self, bytes: &[u8], wire_mac: &[u8; 4]) -> Result<(), SecureSessionError> {
-        let computed = cbc_mac(bytes, &self.last_their_mac, &self.keys.s_mac1, &self.keys.s_mac2);
+        let computed = cbc_mac(
+            bytes,
+            &self.last_their_mac,
+            &self.keys.s_mac1,
+            &self.keys.s_mac2,
+        );
         if computed[..4].ct_eq(wire_mac).unwrap_u8() == 0 {
             return Err(SecureSessionError::BadCryptogram);
         }

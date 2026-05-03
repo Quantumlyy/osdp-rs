@@ -72,7 +72,9 @@ mod tests {
                 number_of: 0,
             },
         ]);
-        let aes = body.capability(FunctionCode::CommunicationSecurity).unwrap();
+        let aes = body
+            .capability(FunctionCode::CommunicationSecurity)
+            .unwrap();
         assert_eq!(aes.compliance, 1);
         let rxsize = body.capability(FunctionCode::ReceiveBufferSize).unwrap();
         assert_eq!(rxsize.u16_value(), 128);
@@ -81,8 +83,16 @@ mod tests {
     #[test]
     fn roundtrip() {
         let body = PdCap::new(alloc::vec![
-            Capability { code: 1, compliance: 1, number_of: 4 },
-            Capability { code: 2, compliance: 1, number_of: 2 },
+            Capability {
+                code: 1,
+                compliance: 1,
+                number_of: 4
+            },
+            Capability {
+                code: 2,
+                compliance: 1,
+                number_of: 2
+            },
         ]);
         let bytes = body.encode().unwrap();
         assert_eq!(bytes, [1, 1, 4, 2, 1, 2]);

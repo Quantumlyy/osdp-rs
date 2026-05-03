@@ -68,10 +68,12 @@ impl FunctionCode {
             14 => Self::Biometrics,
             15 => Self::SecurePinEntry,
             16 => Self::OsdpVersion,
-            other => return Err(Error::MalformedPayload {
-                code: other,
-                reason: "unknown PDCAP function code",
-            }),
+            other => {
+                return Err(Error::MalformedPayload {
+                    code: other,
+                    reason: "unknown PDCAP function code",
+                });
+            }
         })
     }
 

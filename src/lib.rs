@@ -43,10 +43,10 @@ pub mod transport;
 pub mod command;
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-pub mod reply;
+pub mod multipart;
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-pub mod multipart;
+pub mod reply;
 
 #[cfg(all(feature = "alloc", feature = "secure-channel"))]
 #[cfg_attr(docsrs, doc(cfg(all(feature = "alloc", feature = "secure-channel"))))]

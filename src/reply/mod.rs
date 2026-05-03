@@ -267,6 +267,9 @@ mod tests {
 
     #[test]
     fn unknown_byte_errors() {
-        assert!(matches!(ReplyCode::from_byte(0xFF), Err(Error::UnknownReply(0xFF))));
+        assert!(matches!(
+            ReplyCode::from_byte(0xFF),
+            Err(Error::UnknownReply(0xFF))
+        ));
     }
 }

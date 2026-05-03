@@ -67,8 +67,7 @@ impl MockClock {
 
     /// Set the clock to `ms` milliseconds.
     pub fn set(&self, ms: u64) {
-        self.inner
-            .store(ms, core::sync::atomic::Ordering::Relaxed);
+        self.inner.store(ms, core::sync::atomic::Ordering::Relaxed);
     }
 }
 

@@ -119,7 +119,11 @@ impl<T: Transport, C: Clock, H: PdHandler> Pd<T, C, H> {
         let addr = Address::reply(self.address)?;
         let ctrl = ControlByte::new(
             Sqn::new(sqn)?,
-            if self.use_crc { CtrlFlags::USE_CRC } else { CtrlFlags::empty() },
+            if self.use_crc {
+                CtrlFlags::USE_CRC
+            } else {
+                CtrlFlags::empty()
+            },
         );
         let data = reply.encode_data()?;
         PacketBuilder::plain(addr, ctrl, reply.code().as_byte(), data).encode()

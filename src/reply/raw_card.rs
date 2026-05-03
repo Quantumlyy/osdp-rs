@@ -69,16 +69,19 @@ impl Raw {
     /// stopping at `bit_count`.
     pub fn iter_bits(&self) -> impl Iterator<Item = bool> + '_ {
         let n = self.bit_count as usize;
-        self.bits.iter().enumerate().flat_map(move |(byte_idx, &b)| {
-            (0..8).filter_map(move |bit| {
-                let pos = byte_idx * 8 + bit;
-                if pos >= n {
-                    None
-                } else {
-                    Some(b & (0x80 >> bit) != 0)
-                }
+        self.bits
+            .iter()
+            .enumerate()
+            .flat_map(move |(byte_idx, &b)| {
+                (0..8).filter_map(move |bit| {
+                    let pos = byte_idx * 8 + bit;
+                    if pos >= n {
+                        None
+                    } else {
+                        Some(b & (0x80 >> bit) != 0)
+                    }
+                })
             })
-        })
     }
 }
 

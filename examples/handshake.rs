@@ -11,8 +11,9 @@
 use osdp::packet::{Address, ParsedPacket, Sqn};
 use osdp::reply::CCrypt;
 use osdp::secure::{
-    crypto::{client_cryptogram, SessionKeys},
-    seal, unseal, Direction, Disconnected, Session, SCBK_D,
+    Direction, Disconnected, SCBK_D, Session,
+    crypto::{SessionKeys, client_cryptogram},
+    seal, unseal,
 };
 
 fn main() {
