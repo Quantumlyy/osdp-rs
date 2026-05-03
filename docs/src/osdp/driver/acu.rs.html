@@ -326,51 +326,45 @@
 <a href=#326 id=326 data-nosnippet>326</a>        <span class="kw">let </span>transport = VecTransport::new();
 <a href=#327 id=327 data-nosnippet>327</a>        <span class="kw">let </span><span class="kw-2">mut </span>acu = Acu::new(transport, clock);
 <a href=#328 id=328 data-nosnippet>328</a>        <span class="kw">let </span><span class="kw-2">mut </span>pd = PdState::default();
-<a href=#329 id=329 data-nosnippet>329</a>        <span class="kw">let </span>bytes = acu
-<a href=#330 id=330 data-nosnippet>330</a>            .send_to(<span class="number">0x05</span>, <span class="kw-2">&amp;mut </span>pd, <span class="kw-2">&amp;</span>Command::Poll(Poll))
-<a href=#331 id=331 data-nosnippet>331</a>            .unwrap();
-<a href=#332 id=332 data-nosnippet>332</a>        <span class="macro">assert_eq!</span>(bytes[<span class="number">0</span>], <span class="kw">crate</span>::SOM);
-<a href=#333 id=333 data-nosnippet>333</a>        <span class="macro">assert_eq!</span>(bytes[<span class="number">1</span>], <span class="number">0x05</span>);
-<a href=#334 id=334 data-nosnippet>334</a>        <span class="macro">assert_eq!</span>(bytes[<span class="number">4</span>] &amp; <span class="number">0x0F</span>, <span class="number">0x04</span>); <span class="comment">// SQN=0, CRC=on
-<a href=#335 id=335 data-nosnippet>335</a>    </span>}
-<a href=#336 id=336 data-nosnippet>336</a>
-<a href=#337 id=337 data-nosnippet>337</a>    <span class="attr">#[test]
-<a href=#338 id=338 data-nosnippet>338</a>    </span><span class="kw">fn </span>exchange_offline_when_silent() {
-<a href=#339 id=339 data-nosnippet>339</a>        <span class="kw">let </span>clock = MockClock::new();
-<a href=#340 id=340 data-nosnippet>340</a>        <span class="kw">let </span>transport = VecTransport::new();
-<a href=#341 id=341 data-nosnippet>341</a>        <span class="kw">let </span><span class="kw-2">mut </span>acu = Acu::new(transport, clock.clone());
-<a href=#342 id=342 data-nosnippet>342</a>        acu.retry = RetryConfig {
-<a href=#343 id=343 data-nosnippet>343</a>            max_retries: <span class="number">0</span>,
-<a href=#344 id=344 data-nosnippet>344</a>            overall_budget_ms: <span class="number">0</span>,
-<a href=#345 id=345 data-nosnippet>345</a>        };
-<a href=#346 id=346 data-nosnippet>346</a>        <span class="kw">let </span><span class="kw-2">mut </span>pd = PdState::default();
-<a href=#347 id=347 data-nosnippet>347</a>        <span class="comment">// Pretend we'd seen the PD long ago.
-<a href=#348 id=348 data-nosnippet>348</a>        </span>pd.mark_seen(<span class="number">0</span>);
-<a href=#349 id=349 data-nosnippet>349</a>        clock.set(<span class="kw">crate</span>::OFFLINE_THRESHOLD_MS <span class="kw">as </span>u64 + <span class="number">1</span>);
-<a href=#350 id=350 data-nosnippet>350</a>        <span class="kw">let </span>outcome = acu
-<a href=#351 id=351 data-nosnippet>351</a>            .exchange(<span class="number">0x05</span>, <span class="kw-2">&amp;mut </span>pd, <span class="kw-2">&amp;</span>Command::Poll(Poll))
-<a href=#352 id=352 data-nosnippet>352</a>            .unwrap();
-<a href=#353 id=353 data-nosnippet>353</a>        <span class="macro">assert_eq!</span>(outcome, ExchangeOutcome::Offline);
-<a href=#354 id=354 data-nosnippet>354</a>    }
-<a href=#355 id=355 data-nosnippet>355</a>
-<a href=#356 id=356 data-nosnippet>356</a>    <span class="attr">#[test]
-<a href=#357 id=357 data-nosnippet>357</a>    </span><span class="kw">fn </span>timeout_then_no_more_retries_returns_timeout() {
-<a href=#358 id=358 data-nosnippet>358</a>        <span class="kw">let </span>clock = MockClock::new();
-<a href=#359 id=359 data-nosnippet>359</a>        <span class="kw">let </span>transport = VecTransport::new();
-<a href=#360 id=360 data-nosnippet>360</a>        <span class="kw">let </span><span class="kw-2">mut </span>acu = Acu::new(transport, clock.clone());
-<a href=#361 id=361 data-nosnippet>361</a>        acu.retry = RetryConfig {
-<a href=#362 id=362 data-nosnippet>362</a>            max_retries: <span class="number">0</span>,
-<a href=#363 id=363 data-nosnippet>363</a>            overall_budget_ms: <span class="number">0</span>,
-<a href=#364 id=364 data-nosnippet>364</a>        };
-<a href=#365 id=365 data-nosnippet>365</a>        <span class="kw">let </span><span class="kw-2">mut </span>pd = PdState::default();
-<a href=#366 id=366 data-nosnippet>366</a>        pd.mark_seen(<span class="number">0</span>);
-<a href=#367 id=367 data-nosnippet>367</a>        <span class="comment">// Advance just enough that we're hitting the per-attempt budget but
-<a href=#368 id=368 data-nosnippet>368</a>        // not yet off-line.
-<a href=#369 id=369 data-nosnippet>369</a>        </span>clock.set(<span class="kw">crate</span>::REPLY_DELAY_MS <span class="kw">as </span>u64 + <span class="number">1</span>);
-<a href=#370 id=370 data-nosnippet>370</a>        <span class="kw">let </span>outcome = acu
-<a href=#371 id=371 data-nosnippet>371</a>            .exchange(<span class="number">0x05</span>, <span class="kw-2">&amp;mut </span>pd, <span class="kw-2">&amp;</span>Command::Poll(Poll))
-<a href=#372 id=372 data-nosnippet>372</a>            .unwrap();
-<a href=#373 id=373 data-nosnippet>373</a>        <span class="macro">assert_eq!</span>(outcome, ExchangeOutcome::Timeout);
-<a href=#374 id=374 data-nosnippet>374</a>    }
-<a href=#375 id=375 data-nosnippet>375</a>}
+<a href=#329 id=329 data-nosnippet>329</a>        <span class="kw">let </span>bytes = acu.send_to(<span class="number">0x05</span>, <span class="kw-2">&amp;mut </span>pd, <span class="kw-2">&amp;</span>Command::Poll(Poll)).unwrap();
+<a href=#330 id=330 data-nosnippet>330</a>        <span class="macro">assert_eq!</span>(bytes[<span class="number">0</span>], <span class="kw">crate</span>::SOM);
+<a href=#331 id=331 data-nosnippet>331</a>        <span class="macro">assert_eq!</span>(bytes[<span class="number">1</span>], <span class="number">0x05</span>);
+<a href=#332 id=332 data-nosnippet>332</a>        <span class="macro">assert_eq!</span>(bytes[<span class="number">4</span>] &amp; <span class="number">0x0F</span>, <span class="number">0x04</span>); <span class="comment">// SQN=0, CRC=on
+<a href=#333 id=333 data-nosnippet>333</a>    </span>}
+<a href=#334 id=334 data-nosnippet>334</a>
+<a href=#335 id=335 data-nosnippet>335</a>    <span class="attr">#[test]
+<a href=#336 id=336 data-nosnippet>336</a>    </span><span class="kw">fn </span>exchange_offline_when_silent() {
+<a href=#337 id=337 data-nosnippet>337</a>        <span class="kw">let </span>clock = MockClock::new();
+<a href=#338 id=338 data-nosnippet>338</a>        <span class="kw">let </span>transport = VecTransport::new();
+<a href=#339 id=339 data-nosnippet>339</a>        <span class="kw">let </span><span class="kw-2">mut </span>acu = Acu::new(transport, clock.clone());
+<a href=#340 id=340 data-nosnippet>340</a>        acu.retry = RetryConfig {
+<a href=#341 id=341 data-nosnippet>341</a>            max_retries: <span class="number">0</span>,
+<a href=#342 id=342 data-nosnippet>342</a>            overall_budget_ms: <span class="number">0</span>,
+<a href=#343 id=343 data-nosnippet>343</a>        };
+<a href=#344 id=344 data-nosnippet>344</a>        <span class="kw">let </span><span class="kw-2">mut </span>pd = PdState::default();
+<a href=#345 id=345 data-nosnippet>345</a>        <span class="comment">// Pretend we'd seen the PD long ago.
+<a href=#346 id=346 data-nosnippet>346</a>        </span>pd.mark_seen(<span class="number">0</span>);
+<a href=#347 id=347 data-nosnippet>347</a>        clock.set(<span class="kw">crate</span>::OFFLINE_THRESHOLD_MS <span class="kw">as </span>u64 + <span class="number">1</span>);
+<a href=#348 id=348 data-nosnippet>348</a>        <span class="kw">let </span>outcome = acu.exchange(<span class="number">0x05</span>, <span class="kw-2">&amp;mut </span>pd, <span class="kw-2">&amp;</span>Command::Poll(Poll)).unwrap();
+<a href=#349 id=349 data-nosnippet>349</a>        <span class="macro">assert_eq!</span>(outcome, ExchangeOutcome::Offline);
+<a href=#350 id=350 data-nosnippet>350</a>    }
+<a href=#351 id=351 data-nosnippet>351</a>
+<a href=#352 id=352 data-nosnippet>352</a>    <span class="attr">#[test]
+<a href=#353 id=353 data-nosnippet>353</a>    </span><span class="kw">fn </span>timeout_then_no_more_retries_returns_timeout() {
+<a href=#354 id=354 data-nosnippet>354</a>        <span class="kw">let </span>clock = MockClock::new();
+<a href=#355 id=355 data-nosnippet>355</a>        <span class="kw">let </span>transport = VecTransport::new();
+<a href=#356 id=356 data-nosnippet>356</a>        <span class="kw">let </span><span class="kw-2">mut </span>acu = Acu::new(transport, clock.clone());
+<a href=#357 id=357 data-nosnippet>357</a>        acu.retry = RetryConfig {
+<a href=#358 id=358 data-nosnippet>358</a>            max_retries: <span class="number">0</span>,
+<a href=#359 id=359 data-nosnippet>359</a>            overall_budget_ms: <span class="number">0</span>,
+<a href=#360 id=360 data-nosnippet>360</a>        };
+<a href=#361 id=361 data-nosnippet>361</a>        <span class="kw">let </span><span class="kw-2">mut </span>pd = PdState::default();
+<a href=#362 id=362 data-nosnippet>362</a>        pd.mark_seen(<span class="number">0</span>);
+<a href=#363 id=363 data-nosnippet>363</a>        <span class="comment">// Advance just enough that we're hitting the per-attempt budget but
+<a href=#364 id=364 data-nosnippet>364</a>        // not yet off-line.
+<a href=#365 id=365 data-nosnippet>365</a>        </span>clock.set(<span class="kw">crate</span>::REPLY_DELAY_MS <span class="kw">as </span>u64 + <span class="number">1</span>);
+<a href=#366 id=366 data-nosnippet>366</a>        <span class="kw">let </span>outcome = acu.exchange(<span class="number">0x05</span>, <span class="kw-2">&amp;mut </span>pd, <span class="kw-2">&amp;</span>Command::Poll(Poll)).unwrap();
+<a href=#367 id=367 data-nosnippet>367</a>        <span class="macro">assert_eq!</span>(outcome, ExchangeOutcome::Timeout);
+<a href=#368 id=368 data-nosnippet>368</a>    }
+<a href=#369 id=369 data-nosnippet>369</a>}
 </code></pre></div></section></main></body></html>

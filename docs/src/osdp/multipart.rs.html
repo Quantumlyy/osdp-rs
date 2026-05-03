@@ -117,8 +117,8 @@
 <a href=#117 id=117 data-nosnippet>117</a>            <span class="kw">if </span><span class="self">self</span>.offset <span class="kw">as </span>usize &gt;= <span class="self">self</span>.body.len() {
 <a href=#118 id=118 data-nosnippet>118</a>                <span class="kw">return </span><span class="prelude-val">None</span>;
 <a href=#119 id=119 data-nosnippet>119</a>            }
-<a href=#120 id=120 data-nosnippet>120</a>            <span class="kw">let </span>take = (<span class="self">self</span>.body.len() - <span class="self">self</span>.offset <span class="kw">as </span>usize)
-<a href=#121 id=121 data-nosnippet>121</a>                .min(<span class="self">self</span>.fragment_size <span class="kw">as </span>usize) <span class="kw">as </span>u16;
+<a href=#120 id=120 data-nosnippet>120</a>            <span class="kw">let </span>take =
+<a href=#121 id=121 data-nosnippet>121</a>                (<span class="self">self</span>.body.len() - <span class="self">self</span>.offset <span class="kw">as </span>usize).min(<span class="self">self</span>.fragment_size <span class="kw">as </span>usize) <span class="kw">as </span>u16;
 <a href=#122 id=122 data-nosnippet>122</a>            <span class="kw">let </span>frag = <span class="kw-2">&amp;</span><span class="self">self</span>.body[<span class="self">self</span>.offset <span class="kw">as </span>usize..<span class="self">self</span>.offset <span class="kw">as </span>usize + take <span class="kw">as </span>usize];
 <a href=#123 id=123 data-nosnippet>123</a>            <span class="kw">let </span>header = MultipartHeader {
 <a href=#124 id=124 data-nosnippet>124</a>                total: <span class="self">self</span>.body.len() <span class="kw">as </span>u16,
@@ -169,9 +169,9 @@
 <a href=#169 id=169 data-nosnippet>169</a>            <span class="kw">match </span><span class="self">self</span>.total {
 <a href=#170 id=170 data-nosnippet>170</a>                <span class="prelude-val">None </span>=&gt; {
 <a href=#171 id=171 data-nosnippet>171</a>                    <span class="kw">if </span>header.offset != <span class="number">0 </span>{
-<a href=#172 id=172 data-nosnippet>172</a>                        <span class="kw">return </span><span class="prelude-val">Err</span>(Error::Multipart(
-<a href=#173 id=173 data-nosnippet>173</a>                            MultipartError::UnexpectedFirstOffset(header.offset),
-<a href=#174 id=174 data-nosnippet>174</a>                        ));
+<a href=#172 id=172 data-nosnippet>172</a>                        <span class="kw">return </span><span class="prelude-val">Err</span>(Error::Multipart(MultipartError::UnexpectedFirstOffset(
+<a href=#173 id=173 data-nosnippet>173</a>                            header.offset,
+<a href=#174 id=174 data-nosnippet>174</a>                        )));
 <a href=#175 id=175 data-nosnippet>175</a>                    }
 <a href=#176 id=176 data-nosnippet>176</a>                    <span class="self">self</span>.total = <span class="prelude-val">Some</span>(header.total);
 <a href=#177 id=177 data-nosnippet>177</a>                    <span class="self">self</span>.buf.clear();
