@@ -50,8 +50,7 @@ impl PdState {
 
     /// `true` once we've ever heard from the PD and the last exchange is
     /// older than [`crate::OFFLINE_THRESHOLD_MS`]. Returns `false` while we
-    /// are still in the initial-connect window — call [`mark_offline`] if
-    /// you want to force-declare a brand-new PD off-line.
+    /// are still in the initial-connect window.
     pub fn is_offline(&self, now_ms: u64) -> bool {
         self.seen_at_least_once
             && now_ms.saturating_sub(self.last_seen_ms) >= crate::OFFLINE_THRESHOLD_MS as u64
