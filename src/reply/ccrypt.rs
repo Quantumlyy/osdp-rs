@@ -1,0 +1,51 @@
+//! `osdp_CCRYPT` (`0x76`) — client cryptogram (PD response to `osdp_CHLNG`).
+//!
+//! # Spec: §7.16, Annex D.4
+//!
+//! Body: `cUID (8) || RND.B (8) || ClientCryptogram (16)`.
+
+use crate::error::Error;
+use alloc::vec::Vec;
+
+/// `osdp_CCRYPT` body.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct CCrypt {
+    /// PD client identifier (8 bytes).
+    pub cuid: [u8; 8],
+    /// `RND.B` from the PD.
+    pub rnd_b: [u8; 8],
+    /// Client cryptogram = AES_S-ENC( RND.A || RND.B ).
+    pub client_cryptogram: [u8; 16],
+}
+
+impl CCrypt {
+    /// Encode.
+    pub fn encode(&self) -> Result<Vec<u8>, Error> {
+        let mut out = Vec::with_capacity(32);
+        out.extend_from_slice(&self.cuid);
+        out.extend_from_slice(&self.rnd_b);
+        out.extend_from_slice(&self.client_cryptogram);
+        Ok(out)
+    }
+
+    /// Decode.
+    pub fn decode(data: &[u8]) -> Result<Self, Error> {
+        if data.len() != 32 {
+            return Err(Error::MalformedPayload {
+                code: 0x76,
+                reason: "CCRYPT requires 32 bytes",
+            });
+        }
+        let mut cuid = [0u8; 8];
+        cuid.copy_from_slice(&data[..8]);
+        let mut rnd_b = [0u8; 8];
+        rnd_b.copy_from_slice(&data[8..16]);
+        let mut client_cryptogram = [0u8; 16];
+        client_cryptogram.copy_from_slice(&data[16..32]);
+        Ok(Self {
+            cuid,
+            rnd_b,
+            client_cryptogram,
+        })
+    }
+}
