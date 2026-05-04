@@ -19,11 +19,7 @@ type Decryptor = cbc::Decryptor<aes::Aes128>;
 /// Annex D.5 ICV: one's complement of the last MAC from the other side.
 #[inline]
 pub fn complement_icv(other_mac: &[u8; 16]) -> [u8; 16] {
-    let mut iv = [0u8; 16];
-    for (d, s) in iv.iter_mut().zip(other_mac.iter()) {
-        *d = !*s;
-    }
-    iv
+    core::array::from_fn(|i| !other_mac[i])
 }
 
 /// Encrypt a DATA payload with AES-128-CBC, applying the always-0x80 padding
