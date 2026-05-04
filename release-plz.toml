@@ -4,8 +4,8 @@ changelog_update = true
 git_release_enable = true
 # Only publish after the release PR is merged, not on every main push.
 release_always = false
-# Keep this prefix aligned with release-plz release-PR detection.
-pr_branch_prefix = "release-plz-"
+# Keep the existing prefix so open release PRs remain publishable.
+pr_branch_prefix = "release-plz/"
 pr_labels = ["release"]
 # Publish to crates.io from the release job once the gate above is satisfied.
 publish = true
