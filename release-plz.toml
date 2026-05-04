@@ -2,10 +2,12 @@
 # Generate a CHANGELOG.md from conventional-style commit messages.
 changelog_update = true
 git_release_enable = true
-# Open one PR per crate when there are pending releases.
+# Only publish after the release PR is merged, not on every main push.
+release_always = false
+# Keep the existing prefix so open release PRs remain publishable.
 pr_branch_prefix = "release-plz/"
 pr_labels = ["release"]
-# Don't publish until a maintainer merges the release PR.
+# Publish to crates.io from the release job once the gate above is satisfied.
 publish = true
 # Match crates.io semver: dependencies' versions get bumped automatically.
 dependencies_update = true
