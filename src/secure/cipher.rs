@@ -75,10 +75,15 @@ pub fn decrypt_data(
 mod tests {
     use super::*;
 
+    /// Deterministic test fixture bytes derived from a tag — not a real key/IV.
+    fn fixture(tag: u8) -> [u8; 16] {
+        core::array::from_fn(|i| tag.wrapping_add(i as u8))
+    }
+
     #[test]
     fn roundtrip_short() {
-        let s_enc = [0x42u8; 16];
-        let iv = [0xAAu8; 16];
+        let s_enc = fixture(0x42);
+        let iv = fixture(0xAA);
         for n in 0..40usize {
             let plain: Vec<u8> = (0u8..(n as u8)).collect();
             let ct = encrypt_data(&s_enc, &iv, &plain);
@@ -98,8 +103,8 @@ mod tests {
 
     #[test]
     fn decrypt_rejects_unaligned() {
-        let key = [0u8; 16];
-        let iv = [0u8; 16];
+        let key = fixture(0);
+        let iv = fixture(0);
         assert!(decrypt_data(&key, &iv, &[0u8; 15]).is_err());
         assert!(decrypt_data(&key, &iv, &[]).is_err());
     }
@@ -107,10 +112,10 @@ mod tests {
     /// Wrong IV → padding will not validate → error.
     #[test]
     fn wrong_iv_fails_padding() {
-        let s_enc = [0x42u8; 16];
-        let iv = [0xAAu8; 16];
+        let s_enc = fixture(0x42);
+        let iv = fixture(0xAA);
         let ct = encrypt_data(&s_enc, &iv, &[1, 2, 3, 4]);
-        let bad_iv = [0xFFu8; 16];
+        let bad_iv = fixture(0xFF);
         assert!(decrypt_data(&s_enc, &bad_iv, &ct).is_err());
     }
 }
