@@ -201,8 +201,8 @@ mod alloc_impls {
 
         /// Encode the packet without any MAC.
         ///
-        /// If the CTRL byte has [`super::CtrlFlags::HAS_SCB`] set but the
-        /// SCB type *would* require a MAC, the caller must use
+        /// If the CTRL byte has [`crate::packet::CtrlFlags::HAS_SCB`] set
+        /// but the SCB type *would* require a MAC, the caller must use
         /// [`Self::encode_with_mac`] instead.
         pub fn encode(&self) -> Result<Vec<u8>, Error> {
             self.encode_inner(None::<fn(&[u8]) -> [u8; super::MAC_LEN]>)
