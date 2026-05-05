@@ -42,3 +42,24 @@ impl SCrypt {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = SCrypt::new([0x42u8; 16]);
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes.len(), 16);
+        assert_eq!(SCrypt::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_wrong_length() {
+        assert!(matches!(
+            SCrypt::decode(&[0; 15]),
+            Err(Error::MalformedPayload { code: 0x77, .. })
+        ));
+    }
+}

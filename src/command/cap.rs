@@ -34,3 +34,33 @@ impl Cap {
         Ok(Self { reserved: data[0] })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn standard_encodes_zero() {
+        assert_eq!(Cap::standard().encode().unwrap(), [0x00]);
+    }
+
+    #[test]
+    fn roundtrip_preserves_reserved() {
+        let body = Cap { reserved: 0x42 };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x42]);
+        assert_eq!(Cap::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_wrong_length() {
+        assert!(matches!(
+            Cap::decode(&[]),
+            Err(Error::MalformedPayload { code: 0x62, .. })
+        ));
+        assert!(matches!(
+            Cap::decode(&[0x00, 0x00]),
+            Err(Error::MalformedPayload { code: 0x62, .. })
+        ));
+    }
+}

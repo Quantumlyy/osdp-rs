@@ -41,3 +41,38 @@ impl Mfg {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = Mfg {
+            oui: [0x00, 0x06, 0x8E],
+            payload: alloc::vec![0xCA, 0xFE],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x00, 0x06, 0x8E, 0xCA, 0xFE]);
+        assert_eq!(Mfg::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn empty_payload_is_valid() {
+        let body = Mfg {
+            oui: [0xAA, 0xBB, 0xCC],
+            payload: alloc::vec::Vec::new(),
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0xAA, 0xBB, 0xCC]);
+        assert_eq!(Mfg::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_short_oui() {
+        assert!(matches!(
+            Mfg::decode(&[0x00, 0x06]),
+            Err(Error::MalformedPayload { code: 0x80, .. })
+        ));
+    }
+}

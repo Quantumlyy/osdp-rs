@@ -33,3 +33,26 @@ impl KeepActive {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = KeepActive {
+            duration_ms: 0x1234,
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x34, 0x12]);
+        assert_eq!(KeepActive::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_wrong_length() {
+        assert!(matches!(
+            KeepActive::decode(&[0x10]),
+            Err(Error::MalformedPayload { code: 0xA7, .. })
+        ));
+    }
+}

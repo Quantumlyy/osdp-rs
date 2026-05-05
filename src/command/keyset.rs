@@ -70,3 +70,36 @@ impl KeySet {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn scbk_roundtrip() {
+        let key = [0xAAu8; 16];
+        let body = KeySet::scbk(key);
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes[0], 0x01);
+        assert_eq!(bytes[1], 16);
+        assert_eq!(&bytes[2..], &key);
+        assert_eq!(KeySet::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_short() {
+        assert!(matches!(
+            KeySet::decode(&[0x01]),
+            Err(Error::MalformedPayload { code: 0x75, .. })
+        ));
+    }
+
+    #[test]
+    fn decode_rejects_length_mismatch() {
+        // key_len says 4 but only 2 key bytes follow.
+        assert!(matches!(
+            KeySet::decode(&[0x01, 0x04, 0xDE, 0xAD]),
+            Err(Error::MalformedPayload { code: 0x75, .. })
+        ));
+    }
+}

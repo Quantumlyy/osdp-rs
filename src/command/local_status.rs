@@ -40,3 +40,46 @@ empty_status!(LocalStatus, 0x64, "osdp_LSTAT");
 empty_status!(InputStatus, 0x65, "osdp_ISTAT");
 empty_status!(OutputStatus, 0x66, "osdp_OSTAT");
 empty_status!(ReaderStatus, 0x67, "osdp_RSTAT");
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn lstat_roundtrip_empty() {
+        assert!(LocalStatus.encode().unwrap().is_empty());
+        assert_eq!(LocalStatus::decode(&[]).unwrap(), LocalStatus);
+    }
+
+    #[test]
+    fn lstat_rejects_payload() {
+        assert!(matches!(
+            LocalStatus::decode(&[0x00]),
+            Err(Error::MalformedPayload { code: 0x64, .. })
+        ));
+    }
+
+    #[test]
+    fn istat_rejects_payload() {
+        assert!(matches!(
+            InputStatus::decode(&[0x00]),
+            Err(Error::MalformedPayload { code: 0x65, .. })
+        ));
+    }
+
+    #[test]
+    fn ostat_rejects_payload() {
+        assert!(matches!(
+            OutputStatus::decode(&[0x00]),
+            Err(Error::MalformedPayload { code: 0x66, .. })
+        ));
+    }
+
+    #[test]
+    fn rstat_rejects_payload() {
+        assert!(matches!(
+            ReaderStatus::decode(&[0x00]),
+            Err(Error::MalformedPayload { code: 0x67, .. })
+        ));
+    }
+}

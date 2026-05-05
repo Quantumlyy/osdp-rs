@@ -112,3 +112,69 @@ impl CrAuth {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn pivdata_roundtrip() {
+        let body = PivData {
+            object_id: [0x5F, 0xC1, 0x02],
+            element_id: 0x01,
+            offset: 0x0010,
+            data: alloc::vec![0xAA, 0xBB],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x5F, 0xC1, 0x02, 0x01, 0x10, 0x00, 0xAA, 0xBB]);
+        assert_eq!(PivData::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn pivdata_rejects_short_header() {
+        assert!(matches!(
+            PivData::decode(&[0; 5]),
+            Err(Error::MalformedPayload { code: 0xA3, .. })
+        ));
+    }
+
+    #[test]
+    fn genauth_roundtrip() {
+        let body = GenAuth {
+            algorithm: 0x07,
+            key_ref: 0x9A,
+            auth_template: alloc::vec![0x7C, 0x02, 0x80, 0x00],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x07, 0x9A, 0x7C, 0x02, 0x80, 0x00]);
+        assert_eq!(GenAuth::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn genauth_rejects_short() {
+        assert!(matches!(
+            GenAuth::decode(&[0x07]),
+            Err(Error::MalformedPayload { code: 0xA4, .. })
+        ));
+    }
+
+    #[test]
+    fn crauth_passthrough() {
+        let body = CrAuth {
+            challenge: alloc::vec![0x11; 16],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes.len(), 16);
+        assert_eq!(CrAuth::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn crauth_accepts_empty() {
+        assert_eq!(
+            CrAuth::decode(&[]).unwrap(),
+            CrAuth {
+                challenge: Vec::new()
+            }
+        );
+    }
+}

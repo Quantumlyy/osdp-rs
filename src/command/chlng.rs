@@ -39,3 +39,28 @@ impl Chlng {
         Ok(Self { rnd_a })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = Chlng::new([0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88]);
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes.len(), 8);
+        assert_eq!(Chlng::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_wrong_length() {
+        assert!(matches!(
+            Chlng::decode(&[0; 7]),
+            Err(Error::MalformedPayload { code: 0x76, .. })
+        ));
+        assert!(matches!(
+            Chlng::decode(&[0; 9]),
+            Err(Error::MalformedPayload { code: 0x76, .. })
+        ));
+    }
+}

@@ -36,3 +36,29 @@ impl Id {
         Ok(Self { reserved: data[0] })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn standard_encodes_zero() {
+        assert_eq!(Id::standard().encode().unwrap(), [0x00]);
+    }
+
+    #[test]
+    fn roundtrip_preserves_reserved() {
+        let body = Id { reserved: 0x55 };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x55]);
+        assert_eq!(Id::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_wrong_length() {
+        assert!(matches!(
+            Id::decode(&[]),
+            Err(Error::MalformedPayload { code: 0x61, .. })
+        ));
+    }
+}

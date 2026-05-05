@@ -78,3 +78,35 @@ impl BuzzerControl {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = BuzzerControl {
+            reader: 0x00,
+            tone: BuzzerTone::Default,
+            on_time: 5,
+            off_time: 5,
+            count: 3,
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x00, 0x02, 5, 5, 3]);
+        assert_eq!(BuzzerControl::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_wrong_length() {
+        assert!(matches!(
+            BuzzerControl::decode(&[0; 4]),
+            Err(Error::MalformedPayload { code: 0x6A, .. })
+        ));
+    }
+
+    #[test]
+    fn unknown_tone_decodes_to_default() {
+        assert_eq!(BuzzerTone::from_byte(0x99), BuzzerTone::Default);
+    }
+}

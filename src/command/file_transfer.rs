@@ -61,3 +61,47 @@ impl FileTransfer {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = FileTransfer {
+            file_type: 0x07,
+            total_size: 0x0000_0100,
+            offset: 0x0000_0040,
+            fragment: alloc::vec![0xAA, 0xBB, 0xCC],
+        };
+        let bytes = body.encode().unwrap();
+        // file_type | total_size LE | offset LE | frag_len LE | fragment
+        assert_eq!(
+            bytes,
+            [
+                0x07, 0x00, 0x01, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x03, 0x00, 0xAA, 0xBB, 0xCC
+            ]
+        );
+        assert_eq!(FileTransfer::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_short_header() {
+        assert!(matches!(
+            FileTransfer::decode(&[0; 10]),
+            Err(Error::MalformedPayload { code: 0x7C, .. })
+        ));
+    }
+
+    #[test]
+    fn decode_rejects_length_mismatch() {
+        // Header advertises a 5-byte fragment but only 2 bytes follow.
+        let bad = [
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x00, 0xAA, 0xBB,
+        ];
+        assert!(matches!(
+            FileTransfer::decode(&bad),
+            Err(Error::MalformedPayload { code: 0x7C, .. })
+        ));
+    }
+}

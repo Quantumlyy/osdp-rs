@@ -33,3 +33,24 @@ impl AcuRxSize {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = AcuRxSize { max_size: 0x0123 };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x23, 0x01]);
+        assert_eq!(AcuRxSize::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_short() {
+        assert!(matches!(
+            AcuRxSize::decode(&[0x10]),
+            Err(Error::MalformedPayload { code: 0x7B, .. })
+        ));
+    }
+}

@@ -26,3 +26,26 @@ impl Poll {
         Ok(Self)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn encode_is_empty() {
+        assert!(Poll.encode().unwrap().is_empty());
+    }
+
+    #[test]
+    fn decode_empty() {
+        assert_eq!(Poll::decode(&[]).unwrap(), Poll);
+    }
+
+    #[test]
+    fn decode_rejects_payload() {
+        assert!(matches!(
+            Poll::decode(&[0x00]),
+            Err(Error::MalformedPayload { code: 0x60, .. })
+        ));
+    }
+}

@@ -64,3 +64,38 @@ impl XWrite {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = XWrite {
+            mode: 0x01,
+            payload: alloc::vec![0x02, 0xDE, 0xAD],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x01, 0x02, 0xDE, 0xAD]);
+        assert_eq!(XWrite::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn mode_only_is_valid() {
+        let body = XWrite {
+            mode: 0x00,
+            payload: Vec::new(),
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x00]);
+        assert_eq!(XWrite::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn empty_decode_rejected() {
+        assert!(matches!(
+            XWrite::decode(&[]),
+            Err(Error::MalformedPayload { code: 0xA1, .. })
+        ));
+    }
+}

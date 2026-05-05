@@ -26,3 +26,22 @@ impl Abort {
         Ok(Self)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip_empty() {
+        assert!(Abort.encode().unwrap().is_empty());
+        assert_eq!(Abort::decode(&[]).unwrap(), Abort);
+    }
+
+    #[test]
+    fn decode_rejects_payload() {
+        assert!(matches!(
+            Abort::decode(&[0xFF]),
+            Err(Error::MalformedPayload { code: 0xA2, .. })
+        ));
+    }
+}
