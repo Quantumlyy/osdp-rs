@@ -39,7 +39,7 @@ pub struct Secure;
 #[cfg_attr(feature = "_docs", aquamarine::aquamarine)]
 /// ```mermaid
 /// stateDiagram-v2
-///     [*] --> Disconnected: Session::new(scbk)
+///     [*] --> Disconnected: new(scbk)
 ///     Disconnected --> Challenged: challenge(RND.A)
 ///     Challenged --> Cryptogrammed: receive_ccrypt(ccrypt) ✔
 ///     Challenged --> Disconnected: receive_ccrypt(ccrypt) ✘<br/>BadCryptogram

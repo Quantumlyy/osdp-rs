@@ -50,7 +50,7 @@ The Annex D.4 secure-channel handshake is fully type-stated:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Disconnected: Session::new(scbk)
+    [*] --> Disconnected: new(scbk)
     Disconnected --> Challenged: challenge(RND.A)
     Challenged --> Cryptogrammed: receive_ccrypt(ccrypt) ✔
     Challenged --> Disconnected: receive_ccrypt(ccrypt) ✘
