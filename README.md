@@ -19,13 +19,53 @@ Security Industry Association's
 - **Type-state secure session** — invalid SCS sequences (e.g. sending
   `SCS_15` before `SCS_14`) are *compile* errors, not runtime errors.
 
+## Architecture
+
+```mermaid
+flowchart TB
+    APP([Application])
+    subgraph drivers["driver — high-level state machines"]
+        ACU[acu::Acu]
+        PD[pd::Pd]
+    end
+    subgraph messages["typed messages"]
+        CMD[command]
+        REP[reply]
+        MP[multipart]
+    end
+    subgraph wire["wire layer"]
+        PKT[packet]
+        SEC["secure (Annex D)"]
+    end
+    TR[transport]
+    APP --> drivers
+    drivers --> messages
+    drivers --> wire
+    drivers --> TR
+    messages --> wire
+    wire --> TR
+```
+
+The Annex D.4 secure-channel handshake is fully type-stated:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Disconnected: Session::new(scbk)
+    Disconnected --> Challenged: challenge(RND.A)
+    Challenged --> Cryptogrammed: receive_ccrypt(ccrypt) ✔
+    Challenged --> Disconnected: receive_ccrypt(ccrypt) ✘
+    Cryptogrammed --> Secure: confirm_rmac_i(mac) ✔
+    Cryptogrammed --> Disconnected: confirm_rmac_i(mac) ✘
+    Secure --> Secure: mac() / verify()
+```
+
 ## Crate features
 
 | Feature | Default | Pulls in | Purpose |
 |---|---|---|---|
 | `std` | ✓ | std + alloc | desktop usage |
 | `alloc` | ✓ (via `std`) | alloc | `Vec`/`Box`-using paths |
-| `secure-channel` | ✓ | aes, cbc, cipher, subtle | Annex D AES-128 + MAC |
+| `secure-channel` | ✓ | aes, cbc, cipher, subtle, zeroize | Annex D AES-128 + MAC |
 | `embedded-io` | | embedded-io | sync byte-stream transport |
 | `embedded-io-async` | | embedded-io-async | async byte-stream transport |
 | `defmt` | | defmt | structured logging on embedded |
@@ -142,7 +182,7 @@ loopback that exercises SQN cycling, see `examples/loopback_poll.rs`.
 ## Testing
 
 ```sh
-cargo test                              # 71 unit + 14 integration tests
+cargo test                              # 173 unit + 14 integration tests
 cargo test --no-default-features        # `no_std` slice still compiles
 cargo clippy --all-targets --all-features
 cargo run --example loopback_poll
