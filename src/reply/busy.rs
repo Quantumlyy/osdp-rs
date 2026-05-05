@@ -26,3 +26,22 @@ impl Busy {
         Ok(Self)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip_empty() {
+        assert!(Busy.encode().unwrap().is_empty());
+        assert_eq!(Busy::decode(&[]).unwrap(), Busy);
+    }
+
+    #[test]
+    fn decode_rejects_payload() {
+        assert!(matches!(
+            Busy::decode(&[0xFF]),
+            Err(Error::MalformedPayload { code: 0x79, .. })
+        ));
+    }
+}

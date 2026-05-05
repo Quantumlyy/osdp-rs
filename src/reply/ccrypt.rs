@@ -49,3 +49,31 @@ impl CCrypt {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = CCrypt {
+            cuid: [0xAA; 8],
+            rnd_b: [0xBB; 8],
+            client_cryptogram: [0xCC; 16],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes.len(), 32);
+        assert_eq!(&bytes[..8], &[0xAA; 8]);
+        assert_eq!(&bytes[8..16], &[0xBB; 8]);
+        assert_eq!(&bytes[16..32], &[0xCC; 16]);
+        assert_eq!(CCrypt::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_wrong_length() {
+        assert!(matches!(
+            CCrypt::decode(&[0; 31]),
+            Err(Error::MalformedPayload { code: 0x76, .. })
+        ));
+    }
+}

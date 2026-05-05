@@ -40,3 +40,27 @@ impl Com {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = Com {
+            address: 0x05,
+            baud: 9600,
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x05, 0x80, 0x25, 0x00, 0x00]);
+        assert_eq!(Com::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_wrong_length() {
+        assert!(matches!(
+            Com::decode(&[0; 4]),
+            Err(Error::MalformedPayload { code: 0x54, .. })
+        ));
+    }
+}

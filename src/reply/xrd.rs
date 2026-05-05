@@ -40,3 +40,38 @@ impl Xrd {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = Xrd {
+            mode: 0x01,
+            payload: alloc::vec![0xCA, 0xFE],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x01, 0xCA, 0xFE]);
+        assert_eq!(Xrd::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn mode_only_is_valid() {
+        let body = Xrd {
+            mode: 0x00,
+            payload: Vec::new(),
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x00]);
+        assert_eq!(Xrd::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn empty_decode_rejected() {
+        assert!(matches!(
+            Xrd::decode(&[]),
+            Err(Error::MalformedPayload { code: 0xB1, .. })
+        ));
+    }
+}

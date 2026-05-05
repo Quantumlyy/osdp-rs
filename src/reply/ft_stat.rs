@@ -47,3 +47,29 @@ impl FtStat {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = FtStat {
+            status: 0x01,
+            delay_ms: 0x0064,
+            preferred_size: 0x0100,
+            flags: 0x0003,
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x01, 0x64, 0x00, 0x00, 0x01, 0x03, 0x00]);
+        assert_eq!(FtStat::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_wrong_length() {
+        assert!(matches!(
+            FtStat::decode(&[0; 6]),
+            Err(Error::MalformedPayload { code: 0x7A, .. })
+        ));
+    }
+}

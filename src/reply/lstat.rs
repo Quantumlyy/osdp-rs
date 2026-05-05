@@ -37,3 +37,27 @@ impl LStatR {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = LStatR {
+            tamper: 0,
+            power: 1,
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0, 1]);
+        assert_eq!(LStatR::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_wrong_length() {
+        assert!(matches!(
+            LStatR::decode(&[0]),
+            Err(Error::MalformedPayload { code: 0x48, .. })
+        ));
+    }
+}

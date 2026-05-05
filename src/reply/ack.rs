@@ -26,3 +26,22 @@ impl Ack {
         Ok(Self)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip_empty() {
+        assert!(Ack.encode().unwrap().is_empty());
+        assert_eq!(Ack::decode(&[]).unwrap(), Ack);
+    }
+
+    #[test]
+    fn decode_rejects_payload() {
+        assert!(matches!(
+            Ack::decode(&[0x00]),
+            Err(Error::MalformedPayload { code: 0x40, .. })
+        ));
+    }
+}

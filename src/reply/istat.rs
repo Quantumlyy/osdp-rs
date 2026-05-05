@@ -27,3 +27,26 @@ impl IStatR {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = IStatR {
+            inputs: alloc::vec![0, 1, 0, 1],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0, 1, 0, 1]);
+        assert_eq!(IStatR::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn empty_inputs_is_valid() {
+        assert_eq!(
+            IStatR::decode(&[]).unwrap(),
+            IStatR { inputs: Vec::new() }
+        );
+    }
+}

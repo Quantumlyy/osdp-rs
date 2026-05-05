@@ -25,3 +25,28 @@ impl CrAuthR {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = CrAuthR {
+            response: alloc::vec![0xDE, 0xAD, 0xBE, 0xEF],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0xDE, 0xAD, 0xBE, 0xEF]);
+        assert_eq!(CrAuthR::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn empty_response_is_valid() {
+        assert_eq!(
+            CrAuthR::decode(&[]).unwrap(),
+            CrAuthR {
+                response: Vec::new()
+            }
+        );
+    }
+}

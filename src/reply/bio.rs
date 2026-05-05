@@ -97,3 +97,53 @@ impl BioMatchR {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn bioreadr_roundtrip() {
+        let body = BioReadR {
+            reader: 0x01,
+            bio_type: BioType::RightThumb,
+            bio_format: BioFormat::FingerprintAnsi378,
+            quality: 90,
+            data: alloc::vec![0xDE, 0xAD],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(
+            bytes,
+            [0x01, 0x01, 0x02, 90, 0x02, 0x00, 0xDE, 0xAD]
+        );
+        assert_eq!(BioReadR::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn bioreadr_rejects_length_mismatch() {
+        assert!(matches!(
+            BioReadR::decode(&[0x01, 0x01, 0x02, 90, 0x05, 0x00, 0xAA]),
+            Err(Error::MalformedPayload { code: 0x57, .. })
+        ));
+    }
+
+    #[test]
+    fn biomatchr_roundtrip() {
+        let body = BioMatchR {
+            reader: 0x00,
+            result: 0x01,
+            score: 95,
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x00, 0x01, 95]);
+        assert_eq!(BioMatchR::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn biomatchr_rejects_wrong_length() {
+        assert!(matches!(
+            BioMatchR::decode(&[0x00, 0x01]),
+            Err(Error::MalformedPayload { code: 0x58, .. })
+        ));
+    }
+}

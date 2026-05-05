@@ -31,3 +31,26 @@ impl RMacI {
         Ok(Self { r_mac_i })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = RMacI {
+            r_mac_i: [0x77; 16],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes.len(), 16);
+        assert_eq!(RMacI::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_wrong_length() {
+        assert!(matches!(
+            RMacI::decode(&[0; 15]),
+            Err(Error::MalformedPayload { code: 0x78, .. })
+        ));
+    }
+}
