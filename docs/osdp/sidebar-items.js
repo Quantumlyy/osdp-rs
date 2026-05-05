@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["BROADCAST_ADDR","MAX_BUS_PACKET","MAX_PD_ADDR","MIN_RX_SIZE","OFFLINE_THRESHOLD_MS","REPLY_DELAY_MS","REPLY_FLAG","SOM"],"mod":["caps","clock","command","driver","error","multipart","packet","reply","secure","transport"]};
+window.SIDEBAR_ITEMS = {"constant":["BROADCAST_ADDR","MAX_BUS_PACKET","MAX_PD_ADDR","MIN_RX_SIZE","OFFLINE_THRESHOLD_MS","REPLY_DELAY_MS","REPLY_FLAG","SOM"],"mod":["architecture","caps","clock","command","driver","error","multipart","packet","reply","secure","transport"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["SCBK_D"],"mod":["cipher","crypto","frame","mac","pad","session"]};
+window.SIDEBAR_ITEMS = {"constant":["SCBK_D"],"mod":["cipher","crypto","frame","handshake","mac","pad","session"]};
