@@ -229,6 +229,21 @@ impl<T: Transport, C: Clock> Acu<T, C> {
     ///   prior reply, per §5.7 / Table 2.
     /// - When the PD has been silent for ≥ [`crate::OFFLINE_THRESHOLD_MS`],
     ///   returns [`ExchangeOutcome::Offline`].
+    ///
+    #[cfg_attr(feature = "_docs", aquamarine::aquamarine)]
+    /// ```mermaid
+    /// flowchart TD
+    ///     enter([exchange]) --> off{is_offline?}
+    ///     off -- yes --> O[Offline]
+    ///     off -- no --> send[send_with_sqn]
+    ///     send --> recv[recv_one_with_sqn]
+    ///     recv --> kind{reply?}
+    ///     kind -- BUSY --> bu["Busy<br/>(SQN unchanged)"]
+    ///     kind -- typed --> ok["Reply<br/>(bump_sqn)"]
+    ///     kind -- Timeout --> retry{"retries left?<br/>budget left?<br/>not offline?"}
+    ///     retry -- yes --> send
+    ///     retry -- no --> T[Timeout]
+    /// ```
     pub fn exchange(
         &mut self,
         pd_addr: u8,

@@ -3,15 +3,10 @@
 //! # Spec: Annex D.4
 //!
 //! States are phantom-typed so that calling out-of-order is a *compile* error
-//! rather than a runtime fault. The intended sequence is:
+//! rather than a runtime fault. Calls from any state may transition back to
+//! [`Disconnected`] on error.
 //!
-//! ```text
-//! Disconnected --challenge(RND.A)----> Challenged
-//! Challenged   --recv_ccrypt(...)----> Cryptogrammed
-//! Cryptogrammed--recv_rmac_i(...)----> Secure
-//! ```
-//!
-//! Calls from any state may transition back to [`Disconnected`] on error.
+//! See [`Session`] for the rendered state diagram.
 
 use crate::error::SecureSessionError;
 use crate::reply::CCrypt;
@@ -35,6 +30,23 @@ pub struct Cryptogrammed;
 pub struct Secure;
 
 /// Secure-channel session state.
+///
+/// The phantom parameter `S` tracks which step of the Annex D.4 handshake
+/// the session is in. Each transition consumes the old `Session` and yields
+/// a new one in the next state — calling methods out of order is therefore a
+/// *compile* error rather than a runtime fault.
+///
+#[cfg_attr(feature = "_docs", aquamarine::aquamarine)]
+/// ```mermaid
+/// stateDiagram-v2
+///     [*] --> Disconnected: Session::new(scbk)
+///     Disconnected --> Challenged: challenge(RND.A)
+///     Challenged --> Cryptogrammed: receive_ccrypt(ccrypt) ✔
+///     Challenged --> Disconnected: receive_ccrypt(ccrypt) ✘<br/>BadCryptogram
+///     Cryptogrammed --> Secure: confirm_rmac_i(mac) ✔
+///     Cryptogrammed --> Disconnected: confirm_rmac_i(mac) ✘<br/>BadCryptogram
+///     Secure --> Secure: mac() / verify()<br/>seal_data() / open_data()
+/// ```
 ///
 /// All fields are zeroized when the session is dropped (regardless of which
 /// state it is in), so cancelled or panicking flows do not leave the SCBK or

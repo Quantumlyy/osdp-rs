@@ -18,8 +18,32 @@
 //! - All fragments report the same `MpSizeTotal`.
 //! - Sender may abort by setting `MpOffset >= MpSizeTotal` and
 //!   `MpFragmentSize = 0`.
+//!
+//! See [`flow`] for a rendered fragment-exchange diagram.
 
 use crate::error::{Error, MultipartError};
+
+/// Rendered diagram of a multi-part transfer.
+///
+/// Each fragment is a normal OSDP packet whose data block is prefixed with a
+/// [`MultipartHeader`]. The receiver tracks the next-expected offset and
+/// rejects any out-of-order, overlapping, or total-changing fragment.
+///
+#[cfg_attr(feature = "_docs", aquamarine::aquamarine)]
+/// ```mermaid
+/// sequenceDiagram
+///     participant TX as MultipartTx<br/>(splitter)
+///     participant RX as MultipartRx<br/>(assembler)
+///     TX->>RX: hdr(total=N, offset=0,         frag=k₀) ‖ payload₀
+///     RX->>RX: state = AwaitOffset(k₀)
+///     TX->>RX: hdr(total=N, offset=k₀,        frag=k₁) ‖ payload₁
+///     RX->>RX: state = AwaitOffset(k₀+k₁)
+///     TX->>RX: hdr(total=N, offset=k₀+k₁,     frag=k₂) ‖ payload₂
+///     RX-->>TX: complete (reassembled body, N bytes)
+///     Note over TX,RX: TX may abort by sending<br/>hdr(total=N, offset≥N, frag=0)
+/// ```
+#[cfg(feature = "alloc")]
+pub mod flow {}
 
 /// Multi-part header on the wire.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
