@@ -19,6 +19,7 @@ use crate::secure::crypto::{SessionKeys, client_cryptogram, initial_rmac, server
 use crate::secure::mac::cbc_mac;
 use core::marker::PhantomData;
 use subtle::ConstantTimeEq;
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Phantom: session not started.
 #[derive(Debug, Clone, Copy)]
@@ -34,7 +35,14 @@ pub struct Cryptogrammed;
 pub struct Secure;
 
 /// Secure-channel session state.
-#[derive(Debug, Clone)]
+///
+/// All fields are zeroized when the session is dropped (regardless of which
+/// state it is in), so cancelled or panicking flows do not leave the SCBK or
+/// derived material in memory. Note that `Clone` is preserved for ergonomic
+/// fork-and-mirror flows: cloning duplicates the key material, and only the
+/// dropped clone is zeroized — the surviving clone still holds keys until it
+/// is dropped in turn.
+#[derive(Debug, Clone, Zeroize, ZeroizeOnDrop)]
 pub struct Session<S> {
     scbk: [u8; 16],
     rnd_a: [u8; 8],
@@ -44,29 +52,36 @@ pub struct Session<S> {
     /// Last MAC received from the *other* device — used as ICV for the next
     /// outgoing MAC, per Annex D.5.
     last_their_mac: [u8; 16],
+    #[zeroize(skip)]
     _state: PhantomData<S>,
 }
 
 impl<S> Session<S> {
     /// Carry every field forward into a new phantom state. Used for
     /// state transitions that do not mutate cryptographic material.
-    fn transition<T>(self) -> Session<T> {
+    ///
+    /// Uses `core::mem::take` per field rather than direct moves because
+    /// `Session` derives `ZeroizeOnDrop`, which adds a `Drop` impl and
+    /// forbids moving out of fields. Each `take` leaves a zero in `self`,
+    /// the new `Session` carries the original value, and the old `self` is
+    /// then dropped (zeroizing already-zero memory — a no-op).
+    fn transition<T>(mut self) -> Session<T> {
         Session {
-            scbk: self.scbk,
-            rnd_a: self.rnd_a,
-            rnd_b: self.rnd_b,
-            cuid: self.cuid,
-            keys: self.keys,
-            last_their_mac: self.last_their_mac,
+            scbk: core::mem::take(&mut self.scbk),
+            rnd_a: core::mem::take(&mut self.rnd_a),
+            rnd_b: core::mem::take(&mut self.rnd_b),
+            cuid: core::mem::take(&mut self.cuid),
+            keys: core::mem::take(&mut self.keys),
+            last_their_mac: core::mem::take(&mut self.last_their_mac),
             _state: PhantomData,
         }
     }
 
     /// Drop back to [`Disconnected`], wiping all derived material but keeping
     /// the SCBK so the caller can immediately re-handshake.
-    fn reset(self) -> Session<Disconnected> {
+    fn reset(mut self) -> Session<Disconnected> {
         Session {
-            scbk: self.scbk,
+            scbk: core::mem::take(&mut self.scbk),
             rnd_a: [0; 8],
             rnd_b: [0; 8],
             cuid: [0; 8],

@@ -15,7 +15,7 @@ categories = ["embedded", "no-std", "network-programming", "parser-implementatio
 default = ["std", "secure-channel"]
 std = ["alloc"]
 alloc = []
-secure-channel = ["dep:aes", "dep:cbc", "dep:cipher", "dep:subtle"]
+secure-channel = ["dep:aes", "dep:cbc", "dep:cipher", "dep:subtle", "dep:zeroize"]
 embedded-io = ["dep:embedded-io"]
 embedded-io-async = ["dep:embedded-io-async"]
 defmt = ["dep:defmt"]
@@ -28,6 +28,7 @@ aes = { version = "0.8", default-features = false, optional = true }
 cbc = { version = "0.1", default-features = false, optional = true }
 cipher = { version = "0.4", default-features = false, optional = true }
 subtle = { version = "2.6", default-features = false, optional = true }
+zeroize = { version = "1.8", default-features = false, features = ["derive"], optional = true }
 
 embedded-io = { version = "0.6", optional = true }
 embedded-io-async = { version = "0.6", optional = true }
