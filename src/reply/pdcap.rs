@@ -6,6 +6,7 @@
 
 use crate::caps::{Capability, FunctionCode};
 use crate::error::Error;
+use crate::payload_util::require_multiple_of;
 use alloc::vec::Vec;
 
 /// `osdp_PDCAP` body.
@@ -40,12 +41,7 @@ impl PdCap {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() % Capability::WIRE_LEN != 0 {
-            return Err(Error::MalformedPayload {
-                code: 0x46,
-                reason: "PDCAP payload must be multiple of 3 bytes",
-            });
-        }
+        require_multiple_of(data, Capability::WIRE_LEN, 0x46)?;
         let capabilities = data
             .chunks_exact(Capability::WIRE_LEN)
             .map(|c| Capability::decode([c[0], c[1], c[2]]))

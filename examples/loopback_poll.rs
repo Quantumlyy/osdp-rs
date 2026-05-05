@@ -21,11 +21,6 @@ impl PdHandler for AlwaysAck {
     }
 }
 
-fn shuffle(from: &mut VecTransport, to: &mut VecTransport) {
-    let bytes: Vec<u8> = from.outgoing.drain(..).collect();
-    to.incoming.extend(bytes);
-}
-
 fn main() {
     let mut acu = Acu::new(VecTransport::new(), SystemClock::new());
     let mut pd = Pd::new(VecTransport::new(), SystemClock::new(), 0x05, AlwaysAck);
@@ -45,13 +40,13 @@ fn main() {
         );
 
         // Ferry ACU outgoing → PD incoming.
-        shuffle(acu.transport(), pd.transport());
+        acu.transport().shuffle_to(pd.transport());
 
         // PD processes the packet and queues its reply.
         pd.poll_once().expect("pd poll");
 
         // Ferry PD outgoing → ACU incoming.
-        shuffle(pd.transport(), acu.transport());
+        pd.transport().shuffle_to(acu.transport());
 
         // ACU reads its reply.
         match acu.receive(&mut state) {

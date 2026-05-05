@@ -15,10 +15,14 @@ categories = ["embedded", "no-std", "network-programming", "parser-implementatio
 default = ["std", "secure-channel"]
 std = ["alloc"]
 alloc = []
-secure-channel = ["dep:aes", "dep:cbc", "dep:cipher", "dep:subtle"]
+secure-channel = ["dep:aes", "dep:cbc", "dep:cipher", "dep:subtle", "dep:zeroize"]
 embedded-io = ["dep:embedded-io"]
 embedded-io-async = ["dep:embedded-io-async"]
 defmt = ["dep:defmt"]
+# Internal: turn rustdoc Mermaid code blocks into rendered SVG via aquamarine.
+# Enabled by docs.rs (see [package.metadata.docs.rs]); local `cargo doc`
+# users can pass `--features _docs` to get the same rendering.
+_docs = ["dep:aquamarine"]
 
 [dependencies]
 num_enum = { version = "0.7", default-features = false }
@@ -28,10 +32,13 @@ aes = { version = "0.8", default-features = false, optional = true }
 cbc = { version = "0.1", default-features = false, optional = true }
 cipher = { version = "0.4", default-features = false, optional = true }
 subtle = { version = "2.6", default-features = false, optional = true }
+zeroize = { version = "1.8", default-features = false, features = ["derive"], optional = true }
 
 embedded-io = { version = "0.6", optional = true }
 embedded-io-async = { version = "0.6", optional = true }
 defmt = { version = "0.3", optional = true }
+
+aquamarine = { version = "0.6", optional = true }
 
 [dev-dependencies]
 proptest = "1.5"
@@ -39,3 +46,7 @@ proptest = "1.5"
 [lib]
 name = "osdp"
 path = "src/lib.rs"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

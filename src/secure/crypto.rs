@@ -17,6 +17,7 @@
 use aes::Aes128;
 use aes::cipher::generic_array::GenericArray;
 use aes::cipher::{BlockDecrypt, BlockEncrypt, KeyInit};
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// 128-bit AES block.
 pub type Block = [u8; 16];
@@ -53,7 +54,10 @@ fn key_template(tag1: u8, tag2: u8, rnd_a: &[u8; 8]) -> Block {
 }
 
 /// Derived session keys.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+///
+/// Zeroized on drop so cancelled or panicking sessions don't leave key
+/// material in heap or stack memory.
+#[derive(Debug, Clone, PartialEq, Eq, Default, Zeroize, ZeroizeOnDrop)]
 pub struct SessionKeys {
     /// `S-ENC` — encryption key.
     pub s_enc: [u8; 16],

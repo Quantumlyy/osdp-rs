@@ -25,3 +25,28 @@ impl GenAuthR {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = GenAuthR {
+            response: alloc::vec![0x7C, 0x02, 0x82, 0x00],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x7C, 0x02, 0x82, 0x00]);
+        assert_eq!(GenAuthR::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn empty_response_is_valid() {
+        assert_eq!(
+            GenAuthR::decode(&[]).unwrap(),
+            GenAuthR {
+                response: Vec::new()
+            }
+        );
+    }
+}

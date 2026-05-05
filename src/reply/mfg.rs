@@ -7,6 +7,7 @@
 //! - `osdp_MFGREP` (`0x90`) — vendor reply (OUI + payload).
 
 use crate::error::Error;
+use crate::payload_util::require_at_least;
 use alloc::vec::Vec;
 
 macro_rules! oui_plus_payload {
@@ -31,12 +32,7 @@ macro_rules! oui_plus_payload {
 
             /// Decode.
             pub fn decode(data: &[u8]) -> Result<Self, Error> {
-                if data.len() < 3 {
-                    return Err(Error::MalformedPayload {
-                        code: $code,
-                        reason: "manufacturer reply requires 3-byte OUI",
-                    });
-                }
+                require_at_least(data, 3, $code)?;
                 let mut oui = [0u8; 3];
                 oui.copy_from_slice(&data[..3]);
                 Ok(Self {
@@ -59,3 +55,65 @@ oui_plus_payload!(
     "`osdp_MFGERRR` body — manufacturer error reply."
 );
 oui_plus_payload!(MfgRep, 0x90, "`osdp_MFGREP` body — manufacturer reply.");
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn mfgstatr_roundtrip() {
+        let body = MfgStatR {
+            oui: [0x00, 0x06, 0x8E],
+            payload: alloc::vec![0x01, 0x02],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x00, 0x06, 0x8E, 0x01, 0x02]);
+        assert_eq!(MfgStatR::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn mfgstatr_rejects_short_oui() {
+        assert!(matches!(
+            MfgStatR::decode(&[0x00, 0x06]),
+            Err(Error::PayloadTooShort { code: 0x83, .. })
+        ));
+    }
+
+    #[test]
+    fn mfgerrr_roundtrip() {
+        let body = MfgErrR {
+            oui: [0xAA, 0xBB, 0xCC],
+            payload: alloc::vec![0xEE],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0xAA, 0xBB, 0xCC, 0xEE]);
+        assert_eq!(MfgErrR::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn mfgerrr_rejects_short_oui() {
+        assert!(matches!(
+            MfgErrR::decode(&[0xAA]),
+            Err(Error::PayloadTooShort { code: 0x84, .. })
+        ));
+    }
+
+    #[test]
+    fn mfgrep_roundtrip_empty_payload() {
+        let body = MfgRep {
+            oui: [0x11, 0x22, 0x33],
+            payload: Vec::new(),
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x11, 0x22, 0x33]);
+        assert_eq!(MfgRep::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn mfgrep_rejects_short_oui() {
+        assert!(matches!(
+            MfgRep::decode(&[]),
+            Err(Error::PayloadTooShort { code: 0x90, .. })
+        ));
+    }
+}

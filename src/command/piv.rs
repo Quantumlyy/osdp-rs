@@ -7,6 +7,7 @@
 //! when their payload exceeds a single packet's RX size.
 
 use crate::error::Error;
+use crate::payload_util::require_at_least;
 use alloc::vec::Vec;
 
 /// `osdp_PIVDATA` body.
@@ -38,12 +39,7 @@ impl PivData {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() < 6 {
-            return Err(Error::MalformedPayload {
-                code: 0xA3,
-                reason: "PIVDATA requires at least 6 bytes",
-            });
-        }
+        require_at_least(data, 6, 0xA3)?;
         let mut object_id = [0u8; 3];
         object_id.copy_from_slice(&data[..3]);
         Ok(Self {
@@ -78,12 +74,7 @@ impl GenAuth {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() < 2 {
-            return Err(Error::MalformedPayload {
-                code: 0xA4,
-                reason: "GENAUTH requires at least 2 bytes",
-            });
-        }
+        require_at_least(data, 2, 0xA4)?;
         Ok(Self {
             algorithm: data[0],
             key_ref: data[1],
@@ -110,5 +101,71 @@ impl CrAuth {
         Ok(Self {
             challenge: data.to_vec(),
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn pivdata_roundtrip() {
+        let body = PivData {
+            object_id: [0x5F, 0xC1, 0x02],
+            element_id: 0x01,
+            offset: 0x0010,
+            data: alloc::vec![0xAA, 0xBB],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x5F, 0xC1, 0x02, 0x01, 0x10, 0x00, 0xAA, 0xBB]);
+        assert_eq!(PivData::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn pivdata_rejects_short_header() {
+        assert!(matches!(
+            PivData::decode(&[0; 5]),
+            Err(Error::PayloadTooShort { code: 0xA3, .. })
+        ));
+    }
+
+    #[test]
+    fn genauth_roundtrip() {
+        let body = GenAuth {
+            algorithm: 0x07,
+            key_ref: 0x9A,
+            auth_template: alloc::vec![0x7C, 0x02, 0x80, 0x00],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x07, 0x9A, 0x7C, 0x02, 0x80, 0x00]);
+        assert_eq!(GenAuth::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn genauth_rejects_short() {
+        assert!(matches!(
+            GenAuth::decode(&[0x07]),
+            Err(Error::PayloadTooShort { code: 0xA4, .. })
+        ));
+    }
+
+    #[test]
+    fn crauth_passthrough() {
+        let body = CrAuth {
+            challenge: alloc::vec![0x11; 16],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes.len(), 16);
+        assert_eq!(CrAuth::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn crauth_accepts_empty() {
+        assert_eq!(
+            CrAuth::decode(&[]).unwrap(),
+            CrAuth {
+                challenge: Vec::new()
+            }
+        );
     }
 }

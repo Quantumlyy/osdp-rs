@@ -10,6 +10,8 @@
 //!
 //! # Layering
 //!
+//! See [`architecture`] for a rendered diagram of how these modules relate.
+//!
 //! - [`packet`] — wire framing (SOM, header, SCB, MAC, trailer)
 //! - [`command`] / [`reply`] — typed messages
 //! - [`multipart`] — RFC §5.10 multi-part assembly / disassembly
@@ -17,6 +19,36 @@
 //! - [`transport`] — byte-stream abstraction
 //! - [`driver`] — ACU and PD state machines
 //! - [`caps`] — Annex B function codes
+//!
+//! # Quick start
+//!
+//! Drive a PD at address `0x05` through one POLL exchange. The example uses
+//! [`transport::VecTransport`], so without a peer feeding bytes back the
+//! exchange will end in [`driver::acu::ExchangeOutcome::Timeout`] — wire it
+//! up to a real `Transport` (or another `VecTransport`, see
+//! `examples/loopback_poll.rs`) for a successful round-trip.
+//!
+//! ```
+//! use osdp::clock::SystemClock;
+//! use osdp::command::{Command, Poll};
+//! use osdp::driver::acu::{Acu, ExchangeOutcome, PdState};
+//! use osdp::reply::Reply;
+//! use osdp::transport::VecTransport;
+//!
+//! let mut acu = Acu::new(VecTransport::new(), SystemClock::new());
+//! let mut pd = PdState::default();
+//! match acu.exchange(0x05, &mut pd, &Command::Poll(Poll))? {
+//!     ExchangeOutcome::Reply(Reply::Ack(_)) => { /* PD alive */ }
+//!     ExchangeOutcome::Busy => { /* PD asked us to back off */ }
+//!     ExchangeOutcome::Timeout => { /* no reply within budget */ }
+//!     ExchangeOutcome::Offline => { /* PD declared offline */ }
+//!     _ => {}
+//! }
+//! # Ok::<(), osdp::Error>(())
+//! ```
+//!
+//! For the secure-channel walk see `examples/handshake.rs`; for an end-to-end
+//! loopback that exercises SQN cycling see `examples/loopback_poll.rs`.
 //!
 //! # Specification cross-references
 //!
@@ -37,6 +69,42 @@ pub mod clock;
 pub mod error;
 pub mod packet;
 pub mod transport;
+
+/// Crate architecture diagram.
+///
+/// `osdp-rs` layers responsibilities so that the high-level state machines
+/// in [`driver`] can stay independent of the wire format and the I/O
+/// substrate. Every arrow points "uses".
+///
+#[cfg_attr(feature = "_docs", aquamarine::aquamarine)]
+/// ```mermaid
+/// flowchart TB
+///     APP([Application])
+///     subgraph drivers["driver — high-level state machines"]
+///         ACU[acu::Acu]
+///         PD[pd::Pd]
+///     end
+///     subgraph messages["typed messages"]
+///         CMD[command]
+///         REP[reply]
+///         MP[multipart]
+///     end
+///     subgraph wire["wire layer"]
+///         PKT[packet]
+///         SEC["secure (Annex D)"]
+///     end
+///     TR[transport]
+///     APP --> drivers
+///     drivers --> messages
+///     drivers --> wire
+///     drivers --> TR
+///     messages --> wire
+///     wire --> TR
+/// ```
+pub mod architecture {}
+
+#[cfg(feature = "alloc")]
+mod payload_util;
 
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]

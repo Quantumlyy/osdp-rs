@@ -62,6 +62,13 @@ impl VecTransport {
         let v: alloc::vec::Vec<u8> = self.outgoing.drain(..).collect();
         v
     }
+
+    /// Move every byte from this transport's outgoing queue into `other`'s
+    /// incoming queue, modelling a one-way half-duplex bus segment. Useful in
+    /// loopback tests and examples that wire two `VecTransport`s back-to-back.
+    pub fn shuffle_to(&mut self, other: &mut VecTransport) {
+        other.incoming.extend(self.outgoing.drain(..));
+    }
 }
 
 #[cfg(feature = "alloc")]

@@ -3,6 +3,7 @@
 //! # Spec: §6.21
 
 use crate::error::Error;
+use crate::payload_util::require_at_least;
 use alloc::vec::Vec;
 
 /// `osdp_FILETRANSFER` body.
@@ -38,12 +39,7 @@ impl FileTransfer {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() < 11 {
-            return Err(Error::MalformedPayload {
-                code: 0x7C,
-                reason: "FILETRANSFER requires at least 11 bytes",
-            });
-        }
+        require_at_least(data, 11, 0x7C)?;
         let total_size = u32::from_le_bytes([data[1], data[2], data[3], data[4]]);
         let offset = u32::from_le_bytes([data[5], data[6], data[7], data[8]]);
         let frag_len = u16::from_le_bytes([data[9], data[10]]) as usize;
@@ -59,5 +55,49 @@ impl FileTransfer {
             offset,
             fragment: data[11..11 + frag_len].to_vec(),
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = FileTransfer {
+            file_type: 0x07,
+            total_size: 0x0000_0100,
+            offset: 0x0000_0040,
+            fragment: alloc::vec![0xAA, 0xBB, 0xCC],
+        };
+        let bytes = body.encode().unwrap();
+        // file_type | total_size LE | offset LE | frag_len LE | fragment
+        assert_eq!(
+            bytes,
+            [
+                0x07, 0x00, 0x01, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x03, 0x00, 0xAA, 0xBB, 0xCC
+            ]
+        );
+        assert_eq!(FileTransfer::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_short_header() {
+        assert!(matches!(
+            FileTransfer::decode(&[0; 10]),
+            Err(Error::PayloadTooShort { code: 0x7C, .. })
+        ));
+    }
+
+    #[test]
+    fn decode_rejects_length_mismatch() {
+        // Header advertises a 5-byte fragment but only 2 bytes follow.
+        let bad = [
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x00, 0xAA, 0xBB,
+        ];
+        assert!(matches!(
+            FileTransfer::decode(&bad),
+            Err(Error::MalformedPayload { code: 0x7C, .. })
+        ));
     }
 }

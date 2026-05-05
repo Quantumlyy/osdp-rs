@@ -3,15 +3,10 @@
 //! # Spec: Annex D.4
 //!
 //! States are phantom-typed so that calling out-of-order is a *compile* error
-//! rather than a runtime fault. The intended sequence is:
+//! rather than a runtime fault. Calls from any state may transition back to
+//! [`Disconnected`] on error.
 //!
-//! ```text
-//! Disconnected --challenge(RND.A)----> Challenged
-//! Challenged   --recv_ccrypt(...)----> Cryptogrammed
-//! Cryptogrammed--recv_rmac_i(...)----> Secure
-//! ```
-//!
-//! Calls from any state may transition back to [`Disconnected`] on error.
+//! See [`Session`] for the rendered state diagram.
 
 use crate::error::SecureSessionError;
 use crate::reply::CCrypt;
@@ -19,6 +14,7 @@ use crate::secure::crypto::{SessionKeys, client_cryptogram, initial_rmac, server
 use crate::secure::mac::cbc_mac;
 use core::marker::PhantomData;
 use subtle::ConstantTimeEq;
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Phantom: session not started.
 #[derive(Debug, Clone, Copy)]
@@ -34,7 +30,31 @@ pub struct Cryptogrammed;
 pub struct Secure;
 
 /// Secure-channel session state.
-#[derive(Debug, Clone)]
+///
+/// The phantom parameter `S` tracks which step of the Annex D.4 handshake
+/// the session is in. Each transition consumes the old `Session` and yields
+/// a new one in the next state — calling methods out of order is therefore a
+/// *compile* error rather than a runtime fault.
+///
+#[cfg_attr(feature = "_docs", aquamarine::aquamarine)]
+/// ```mermaid
+/// stateDiagram-v2
+///     [*] --> Disconnected: Session::new(scbk)
+///     Disconnected --> Challenged: challenge(RND.A)
+///     Challenged --> Cryptogrammed: receive_ccrypt(ccrypt) ✔
+///     Challenged --> Disconnected: receive_ccrypt(ccrypt) ✘<br/>BadCryptogram
+///     Cryptogrammed --> Secure: confirm_rmac_i(mac) ✔
+///     Cryptogrammed --> Disconnected: confirm_rmac_i(mac) ✘<br/>BadCryptogram
+///     Secure --> Secure: mac() / verify()<br/>seal_data() / open_data()
+/// ```
+///
+/// All fields are zeroized when the session is dropped (regardless of which
+/// state it is in), so cancelled or panicking flows do not leave the SCBK or
+/// derived material in memory. Note that `Clone` is preserved for ergonomic
+/// fork-and-mirror flows: cloning duplicates the key material, and only the
+/// dropped clone is zeroized — the surviving clone still holds keys until it
+/// is dropped in turn.
+#[derive(Debug, Clone, Zeroize, ZeroizeOnDrop)]
 pub struct Session<S> {
     scbk: [u8; 16],
     rnd_a: [u8; 8],
@@ -44,22 +64,65 @@ pub struct Session<S> {
     /// Last MAC received from the *other* device — used as ICV for the next
     /// outgoing MAC, per Annex D.5.
     last_their_mac: [u8; 16],
+    #[zeroize(skip)]
     _state: PhantomData<S>,
+}
+
+impl<S> Session<S> {
+    /// Carry every field forward into a new phantom state. Used for
+    /// state transitions that do not mutate cryptographic material.
+    ///
+    /// Uses `core::mem::take` per field rather than direct moves because
+    /// `Session` derives `ZeroizeOnDrop`, which adds a `Drop` impl and
+    /// forbids moving out of fields. Each `take` leaves a zero in `self`,
+    /// the new `Session` carries the original value, and the old `self` is
+    /// then dropped (zeroizing already-zero memory — a no-op).
+    fn transition<T>(mut self) -> Session<T> {
+        Session {
+            scbk: core::mem::take(&mut self.scbk),
+            rnd_a: core::mem::take(&mut self.rnd_a),
+            rnd_b: core::mem::take(&mut self.rnd_b),
+            cuid: core::mem::take(&mut self.cuid),
+            keys: core::mem::take(&mut self.keys),
+            last_their_mac: core::mem::take(&mut self.last_their_mac),
+            _state: PhantomData,
+        }
+    }
+
+    /// Drop back to [`Disconnected`], wiping all derived material but keeping
+    /// the SCBK so the caller can immediately re-handshake.
+    fn reset(mut self) -> Session<Disconnected> {
+        Session {
+            scbk: core::mem::take(&mut self.scbk),
+            rnd_a: [0; 8],
+            rnd_b: [0; 8],
+            cuid: [0; 8],
+            keys: SessionKeys::default(),
+            last_their_mac: [0; 16],
+            _state: PhantomData,
+        }
+    }
 }
 
 impl Session<Disconnected> {
     /// Begin a new session, holding the SCBK we will use.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use osdp::secure::{SCBK_D, Session};
+    /// use osdp::secure::session::Disconnected;
+    /// let session = Session::<Disconnected>::new(SCBK_D);
+    /// // The next step is `session.challenge(rnd_a)` once we've sent osdp_CHLNG.
+    /// # let _ = session;
+    /// ```
     pub fn new(scbk: [u8; 16]) -> Self {
         Self {
             scbk,
             rnd_a: [0; 8],
             rnd_b: [0; 8],
             cuid: [0; 8],
-            keys: SessionKeys {
-                s_enc: [0; 16],
-                s_mac1: [0; 16],
-                s_mac2: [0; 16],
-            },
+            keys: SessionKeys::default(),
             last_their_mac: [0; 16],
             _state: PhantomData,
         }
@@ -68,15 +131,7 @@ impl Session<Disconnected> {
     /// Move to [`Challenged`] by capturing the `RND.A` we are about to send.
     pub fn challenge(mut self, rnd_a: [u8; 8]) -> Session<Challenged> {
         self.rnd_a = rnd_a;
-        Session {
-            scbk: self.scbk,
-            rnd_a: self.rnd_a,
-            rnd_b: self.rnd_b,
-            cuid: self.cuid,
-            keys: self.keys,
-            last_their_mac: self.last_their_mac,
-            _state: PhantomData,
-        }
+        self.transition()
     }
 }
 
@@ -91,33 +146,9 @@ impl Session<Challenged> {
         self.keys = SessionKeys::derive(&self.scbk, &self.rnd_a);
         let expected = client_cryptogram(&self.keys.s_enc, &self.rnd_a, &self.rnd_b);
         if expected.ct_eq(&ccrypt.client_cryptogram).unwrap_u8() == 0 {
-            return Err((self.into_disconnected(), SecureSessionError::BadCryptogram));
+            return Err((self.reset(), SecureSessionError::BadCryptogram));
         }
-        Ok(Session {
-            scbk: self.scbk,
-            rnd_a: self.rnd_a,
-            rnd_b: self.rnd_b,
-            cuid: self.cuid,
-            keys: self.keys,
-            last_their_mac: self.last_their_mac,
-            _state: PhantomData,
-        })
-    }
-
-    fn into_disconnected(self) -> Session<Disconnected> {
-        Session {
-            scbk: self.scbk,
-            rnd_a: [0; 8],
-            rnd_b: [0; 8],
-            cuid: [0; 8],
-            keys: SessionKeys {
-                s_enc: [0; 16],
-                s_mac1: [0; 16],
-                s_mac2: [0; 16],
-            },
-            last_their_mac: [0; 16],
-            _state: PhantomData,
-        }
+        Ok(self.transition())
     }
 }
 
@@ -138,39 +169,15 @@ impl Session<Cryptogrammed> {
 
     /// PD echoed back our initial R-MAC; advance to fully [`Secure`].
     pub fn confirm_rmac_i(
-        self,
+        mut self,
         their_rmac_i: &[u8; 16],
     ) -> Result<Session<Secure>, (Session<Disconnected>, SecureSessionError)> {
         let mine = self.initial_rmac();
         if mine.ct_eq(their_rmac_i).unwrap_u8() == 0 {
-            let mut me = self;
-            me.last_their_mac = [0; 16];
-            return Err((
-                Session {
-                    scbk: me.scbk,
-                    rnd_a: [0; 8],
-                    rnd_b: [0; 8],
-                    cuid: [0; 8],
-                    keys: SessionKeys {
-                        s_enc: [0; 16],
-                        s_mac1: [0; 16],
-                        s_mac2: [0; 16],
-                    },
-                    last_their_mac: [0; 16],
-                    _state: PhantomData,
-                },
-                SecureSessionError::BadCryptogram,
-            ));
+            return Err((self.reset(), SecureSessionError::BadCryptogram));
         }
-        Ok(Session {
-            scbk: self.scbk,
-            rnd_a: self.rnd_a,
-            rnd_b: self.rnd_b,
-            cuid: self.cuid,
-            keys: self.keys,
-            last_their_mac: mine,
-            _state: PhantomData,
-        })
+        self.last_their_mac = mine;
+        Ok(self.transition())
     }
 }
 
@@ -190,14 +197,22 @@ impl Session<Secure> {
     }
 
     /// Verify a received MAC against our locally-computed value.
-    pub fn verify(&mut self, bytes: &[u8], wire_mac: &[u8; 4]) -> Result<(), SecureSessionError> {
+    pub fn verify(
+        &mut self,
+        bytes: &[u8],
+        wire_mac: &[u8; crate::packet::MAC_LEN],
+    ) -> Result<(), SecureSessionError> {
         let computed = cbc_mac(
             bytes,
             &self.last_their_mac,
             &self.keys.s_mac1,
             &self.keys.s_mac2,
         );
-        if computed[..4].ct_eq(wire_mac).unwrap_u8() == 0 {
+        if computed[..crate::packet::MAC_LEN]
+            .ct_eq(wire_mac)
+            .unwrap_u8()
+            == 0
+        {
             return Err(SecureSessionError::BadCryptogram);
         }
         self.last_their_mac = computed;

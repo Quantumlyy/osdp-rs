@@ -5,6 +5,7 @@
 //! Body is the 16-byte server cryptogram. Packet carries SCB of type `SCS_13`.
 
 use crate::error::Error;
+use crate::payload_util::require_exact_len;
 use alloc::vec::Vec;
 
 /// `osdp_SCRYPT` body.
@@ -29,16 +30,32 @@ impl SCrypt {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() != 16 {
-            return Err(Error::MalformedPayload {
-                code: 0x77,
-                reason: "SCRYPT requires 16-byte cryptogram",
-            });
-        }
+        require_exact_len(data, 16, 0x77)?;
         let mut c = [0u8; 16];
         c.copy_from_slice(data);
         Ok(Self {
             server_cryptogram: c,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = SCrypt::new([0x42u8; 16]);
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes.len(), 16);
+        assert_eq!(SCrypt::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_wrong_length() {
+        assert!(matches!(
+            SCrypt::decode(&[0; 15]),
+            Err(Error::PayloadLength { code: 0x77, .. })
+        ));
     }
 }

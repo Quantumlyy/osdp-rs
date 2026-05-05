@@ -5,6 +5,7 @@
 //! Body: `status (1) || delay (2 LE) || preferred_size (2 LE) || flags (2 LE)`.
 
 use crate::error::Error;
+use crate::payload_util::require_exact_len;
 use alloc::vec::Vec;
 
 /// `osdp_FTSTAT` body.
@@ -33,17 +34,38 @@ impl FtStat {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() != 7 {
-            return Err(Error::MalformedPayload {
-                code: 0x7A,
-                reason: "FTSTAT requires 7 bytes",
-            });
-        }
+        require_exact_len(data, 7, 0x7A)?;
         Ok(Self {
             status: data[0],
             delay_ms: u16::from_le_bytes([data[1], data[2]]),
             preferred_size: u16::from_le_bytes([data[3], data[4]]),
             flags: u16::from_le_bytes([data[5], data[6]]),
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = FtStat {
+            status: 0x01,
+            delay_ms: 0x0064,
+            preferred_size: 0x0100,
+            flags: 0x0003,
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x01, 0x64, 0x00, 0x00, 0x01, 0x03, 0x00]);
+        assert_eq!(FtStat::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_wrong_length() {
+        assert!(matches!(
+            FtStat::decode(&[0; 6]),
+            Err(Error::PayloadLength { code: 0x7A, .. })
+        ));
     }
 }

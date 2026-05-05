@@ -25,3 +25,26 @@ impl PivDataR {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = PivDataR {
+            data: alloc::vec![0xDE, 0xAD, 0xBE, 0xEF],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0xDE, 0xAD, 0xBE, 0xEF]);
+        assert_eq!(PivDataR::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn empty_payload_is_valid() {
+        assert_eq!(
+            PivDataR::decode(&[]).unwrap(),
+            PivDataR { data: Vec::new() }
+        );
+    }
+}

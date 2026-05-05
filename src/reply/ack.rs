@@ -3,6 +3,7 @@
 //! # Spec: §7.1
 
 use crate::error::Error;
+use crate::payload_util::require_exact_len;
 use alloc::vec::Vec;
 
 /// `osdp_ACK` body.
@@ -17,12 +18,26 @@ impl Ack {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if !data.is_empty() {
-            return Err(Error::MalformedPayload {
-                code: 0x40,
-                reason: "ACK has no payload",
-            });
-        }
+        require_exact_len(data, 0, 0x40)?;
         Ok(Self)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip_empty() {
+        assert!(Ack.encode().unwrap().is_empty());
+        assert_eq!(Ack::decode(&[]).unwrap(), Ack);
+    }
+
+    #[test]
+    fn decode_rejects_payload() {
+        assert!(matches!(
+            Ack::decode(&[0x00]),
+            Err(Error::PayloadLength { code: 0x40, .. })
+        ));
     }
 }

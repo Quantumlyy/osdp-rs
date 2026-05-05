@@ -27,3 +27,28 @@ impl OStatR {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = OStatR {
+            outputs: alloc::vec![1, 0, 1, 0],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [1, 0, 1, 0]);
+        assert_eq!(OStatR::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn empty_outputs_is_valid() {
+        assert_eq!(
+            OStatR::decode(&[]).unwrap(),
+            OStatR {
+                outputs: Vec::new()
+            }
+        );
+    }
+}

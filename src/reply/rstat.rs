@@ -27,3 +27,28 @@ impl RStatR {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = RStatR {
+            readers: alloc::vec![0, 1, 2],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0, 1, 2]);
+        assert_eq!(RStatR::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn empty_readers_is_valid() {
+        assert_eq!(
+            RStatR::decode(&[]).unwrap(),
+            RStatR {
+                readers: Vec::new()
+            }
+        );
+    }
+}

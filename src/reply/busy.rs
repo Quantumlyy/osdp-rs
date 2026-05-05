@@ -3,6 +3,7 @@
 //! # Spec: §7.18
 
 use crate::error::Error;
+use crate::payload_util::require_exact_len;
 use alloc::vec::Vec;
 
 /// `osdp_BUSY` body.
@@ -17,12 +18,26 @@ impl Busy {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if !data.is_empty() {
-            return Err(Error::MalformedPayload {
-                code: 0x79,
-                reason: "BUSY has no payload",
-            });
-        }
+        require_exact_len(data, 0, 0x79)?;
         Ok(Self)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip_empty() {
+        assert!(Busy.encode().unwrap().is_empty());
+        assert_eq!(Busy::decode(&[]).unwrap(), Busy);
+    }
+
+    #[test]
+    fn decode_rejects_payload() {
+        assert!(matches!(
+            Busy::decode(&[0xFF]),
+            Err(Error::PayloadLength { code: 0x79, .. })
+        ));
     }
 }

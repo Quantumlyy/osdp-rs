@@ -3,6 +3,7 @@
 //! # Spec: §6.24
 
 use crate::error::Error;
+use crate::payload_util::require_exact_len;
 use alloc::vec::Vec;
 
 /// `osdp_ABORT` body (empty).
@@ -17,12 +18,26 @@ impl Abort {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if !data.is_empty() {
-            return Err(Error::MalformedPayload {
-                code: 0xA2,
-                reason: "ABORT has no payload",
-            });
-        }
+        require_exact_len(data, 0, 0xA2)?;
         Ok(Self)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip_empty() {
+        assert!(Abort.encode().unwrap().is_empty());
+        assert_eq!(Abort::decode(&[]).unwrap(), Abort);
+    }
+
+    #[test]
+    fn decode_rejects_payload() {
+        assert!(matches!(
+            Abort::decode(&[0xFF]),
+            Err(Error::PayloadLength { code: 0xA2, .. })
+        ));
     }
 }

@@ -6,6 +6,7 @@
 //! mode-specific.
 
 use crate::error::Error;
+use crate::payload_util::require_at_least;
 use alloc::vec::Vec;
 
 /// `osdp_XRD` body — opaque container.
@@ -28,15 +29,45 @@ impl Xrd {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.is_empty() {
-            return Err(Error::MalformedPayload {
-                code: 0xB1,
-                reason: "XRD requires XRW_MODE byte",
-            });
-        }
+        require_at_least(data, 1, 0xB1)?;
         Ok(Self {
             mode: data[0],
             payload: data[1..].to_vec(),
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = Xrd {
+            mode: 0x01,
+            payload: alloc::vec![0xCA, 0xFE],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x01, 0xCA, 0xFE]);
+        assert_eq!(Xrd::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn mode_only_is_valid() {
+        let body = Xrd {
+            mode: 0x00,
+            payload: Vec::new(),
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x00]);
+        assert_eq!(Xrd::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn empty_decode_rejected() {
+        assert!(matches!(
+            Xrd::decode(&[]),
+            Err(Error::PayloadTooShort { code: 0xB1, .. })
+        ));
     }
 }

@@ -8,6 +8,7 @@
 //! be ignored.
 
 use crate::error::Error;
+use crate::payload_util::require_at_least;
 use alloc::vec::Vec;
 
 /// `osdp_RAW` body.
@@ -43,12 +44,7 @@ impl Raw {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() < 4 {
-            return Err(Error::MalformedPayload {
-                code: 0x50,
-                reason: "RAW requires at least 4 bytes",
-            });
-        }
+        require_at_least(data, 4, 0x50)?;
         let bit_count = u16::from_le_bytes([data[2], data[3]]);
         let need = (bit_count as usize).div_ceil(8);
         if data.len() != 4 + need {
@@ -117,12 +113,7 @@ impl Fmt {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() < 3 {
-            return Err(Error::MalformedPayload {
-                code: 0x51,
-                reason: "FMT requires at least 3 bytes",
-            });
-        }
+        require_at_least(data, 3, 0x51)?;
         let char_count = data[2];
         if data.len() != 3 + char_count as usize {
             return Err(Error::MalformedPayload {

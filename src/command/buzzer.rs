@@ -5,6 +5,7 @@
 //! Body is a 5-byte record per buzzer.
 
 use crate::error::Error;
+use crate::payload_util::require_exact_len;
 use alloc::vec::Vec;
 
 /// Buzzer tone code (Table 19).
@@ -63,12 +64,7 @@ impl BuzzerControl {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() != 5 {
-            return Err(Error::MalformedPayload {
-                code: 0x6A,
-                reason: "BUZ requires 5 bytes",
-            });
-        }
+        require_exact_len(data, 5, 0x6A)?;
         Ok(Self {
             reader: data[0],
             tone: BuzzerTone::from_byte(data[1]),
@@ -76,5 +72,37 @@ impl BuzzerControl {
             off_time: data[3],
             count: data[4],
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = BuzzerControl {
+            reader: 0x00,
+            tone: BuzzerTone::Default,
+            on_time: 5,
+            off_time: 5,
+            count: 3,
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x00, 0x02, 5, 5, 3]);
+        assert_eq!(BuzzerControl::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_wrong_length() {
+        assert!(matches!(
+            BuzzerControl::decode(&[0; 4]),
+            Err(Error::PayloadLength { code: 0x6A, .. })
+        ));
+    }
+
+    #[test]
+    fn unknown_tone_decodes_to_default() {
+        assert_eq!(BuzzerTone::from_byte(0x99), BuzzerTone::Default);
     }
 }

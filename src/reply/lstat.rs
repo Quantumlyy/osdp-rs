@@ -6,6 +6,7 @@
 //! fault.
 
 use crate::error::Error;
+use crate::payload_util::require_exact_len;
 use alloc::vec::Vec;
 
 /// `osdp_LSTATR` body.
@@ -25,15 +26,34 @@ impl LStatR {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() != 2 {
-            return Err(Error::MalformedPayload {
-                code: 0x48,
-                reason: "LSTATR requires 2 bytes",
-            });
-        }
+        require_exact_len(data, 2, 0x48)?;
         Ok(Self {
             tamper: data[0],
             power: data[1],
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = LStatR {
+            tamper: 0,
+            power: 1,
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0, 1]);
+        assert_eq!(LStatR::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn decode_rejects_wrong_length() {
+        assert!(matches!(
+            LStatR::decode(&[0]),
+            Err(Error::PayloadLength { code: 0x48, .. })
+        ));
     }
 }

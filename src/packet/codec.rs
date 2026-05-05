@@ -52,6 +52,22 @@ impl<'a> ParsedPacket<'a> {
     ///
     /// Returns the parsed packet view and the number of bytes consumed
     /// (which equals the value of the LEN field).
+    ///
+    /// The parser is total — every malformed input returns a typed
+    /// [`Error`] rather than panicking.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use osdp::packet::ParsedPacket;
+    /// // osdp_POLL frame addressed to PD 0x05, SQN=0, CRC-16/KERMIT trailer.
+    /// let bytes = [0x53, 0x05, 0x08, 0x00, 0x04, 0x60, 0xBC, 0x89];
+    /// let (parsed, used) = ParsedPacket::parse(&bytes)?;
+    /// assert_eq!(used, bytes.len());
+    /// assert_eq!(parsed.code, 0x60); // osdp_POLL
+    /// assert!(parsed.data.is_empty());
+    /// # Ok::<(), osdp::Error>(())
+    /// ```
     pub fn parse(buf: &'a [u8]) -> Result<(Self, usize), Error> {
         if buf.len() < HEADER_LEN {
             return Err(Error::Truncated {

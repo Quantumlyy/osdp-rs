@@ -3,6 +3,7 @@
 //! # Spec: §6.14, §6.15, Tables 24–25
 
 use crate::error::Error;
+use crate::payload_util::{require_at_least, require_exact_len};
 use alloc::vec::Vec;
 
 /// Biometric type code (Table 24).
@@ -115,12 +116,7 @@ impl BioRead {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() != 4 {
-            return Err(Error::MalformedPayload {
-                code: 0x73,
-                reason: "BIOREAD requires 4 bytes",
-            });
-        }
+        require_exact_len(data, 4, 0x73)?;
         Ok(Self {
             reader: data[0],
             bio_type: BioType::from_byte(data[1]),
@@ -166,12 +162,7 @@ impl BioMatch {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() < 6 {
-            return Err(Error::MalformedPayload {
-                code: 0x74,
-                reason: "BIOMATCH requires at least 6 bytes",
-            });
-        }
+        require_at_least(data, 6, 0x74)?;
         let length = u16::from_le_bytes([data[4], data[5]]) as usize;
         if data.len() != 6 + length {
             return Err(Error::MalformedPayload {
@@ -186,5 +177,64 @@ impl BioMatch {
             quality: data[3],
             template: data[6..6 + length].to_vec(),
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn bioread_roundtrip() {
+        let body = BioRead {
+            reader: 0x02,
+            bio_type: BioType::LeftThumb,
+            bio_format: BioFormat::FingerprintAnsi378,
+            quality: 80,
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x02, 0x06, 0x02, 80]);
+        assert_eq!(BioRead::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn bioread_rejects_wrong_length() {
+        assert!(matches!(
+            BioRead::decode(&[0; 5]),
+            Err(Error::PayloadLength { code: 0x73, .. })
+        ));
+    }
+
+    #[test]
+    fn biotype_unknown_decodes_to_not_specified() {
+        assert_eq!(BioType::from_byte(0xFF), BioType::NotSpecified);
+    }
+
+    #[test]
+    fn biomatch_roundtrip() {
+        let body = BioMatch {
+            reader: 0x01,
+            bio_type: BioType::RightIndex,
+            bio_format: BioFormat::FingerprintRawPgm,
+            quality: 75,
+            template: alloc::vec![0xDE, 0xAD, 0xBE, 0xEF],
+        };
+        let bytes = body.encode().unwrap();
+        // 4 fixed bytes + 2 length bytes (LE 4 = [0x04, 0x00]) + 4 template bytes.
+        assert_eq!(
+            bytes,
+            [0x01, 0x02, 0x01, 75, 0x04, 0x00, 0xDE, 0xAD, 0xBE, 0xEF]
+        );
+        assert_eq!(BioMatch::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn biomatch_rejects_length_disagreement() {
+        // Header claims 5-byte template but payload only has 3 bytes after header.
+        let bad = [0x01, 0x02, 0x01, 75, 0x05, 0x00, 0xAA, 0xBB, 0xCC];
+        assert!(matches!(
+            BioMatch::decode(&bad),
+            Err(Error::MalformedPayload { code: 0x74, .. })
+        ));
     }
 }

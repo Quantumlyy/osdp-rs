@@ -11,6 +11,7 @@
 //! ```
 
 use crate::error::Error;
+use crate::payload_util::require_at_least;
 use alloc::vec::Vec;
 
 /// Text command codes (Table 21).
@@ -100,12 +101,7 @@ impl Text {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() < 6 {
-            return Err(Error::MalformedPayload {
-                code: 0x6B,
-                reason: "TEXT requires at least 6 bytes",
-            });
-        }
+        require_at_least(data, 6, 0x6B)?;
         let length = data[5] as usize;
         if data.len() != 6 + length {
             return Err(Error::MalformedPayload {
@@ -123,5 +119,58 @@ impl Text {
             column: data[4],
             text,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn roundtrip() {
+        let body = Text {
+            reader: 0x00,
+            command: TextCommand::PermanentNoWrap,
+            temp_time_s: 0,
+            row: 1,
+            column: 1,
+            text: alloc::vec![b'O', b'K'],
+        };
+        let bytes = body.encode().unwrap();
+        assert_eq!(bytes, [0x00, 0x01, 0x00, 0x01, 0x01, 0x02, b'O', b'K']);
+        assert_eq!(Text::decode(&bytes).unwrap(), body);
+    }
+
+    #[test]
+    fn rejects_non_ascii_text_on_encode() {
+        let body = Text {
+            reader: 0,
+            command: TextCommand::PermanentNoWrap,
+            temp_time_s: 0,
+            row: 1,
+            column: 1,
+            text: alloc::vec![0x1F], // below printable
+        };
+        assert!(matches!(
+            body.encode(),
+            Err(Error::MalformedPayload { code: 0x6B, .. })
+        ));
+    }
+
+    #[test]
+    fn decode_rejects_unknown_command_code() {
+        assert!(matches!(
+            Text::decode(&[0x00, 0x99, 0x00, 0x01, 0x01, 0x00]),
+            Err(Error::MalformedPayload { code: 0x6B, .. })
+        ));
+    }
+
+    #[test]
+    fn decode_rejects_length_mismatch() {
+        // Header claims 5-byte text but only 1 byte follows.
+        assert!(matches!(
+            Text::decode(&[0x00, 0x01, 0x00, 0x01, 0x01, 0x05, b'A']),
+            Err(Error::MalformedPayload { code: 0x6B, .. })
+        ));
     }
 }
