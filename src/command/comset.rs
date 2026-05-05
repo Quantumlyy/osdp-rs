@@ -5,6 +5,7 @@
 //! Body is 5 bytes: `addr (1)` + `baud (4 LE)`.
 
 use crate::error::Error;
+use crate::payload_util::require_exact_len;
 use alloc::vec::Vec;
 
 /// `osdp_COMSET` body.
@@ -30,12 +31,7 @@ impl ComSet {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() != 5 {
-            return Err(Error::MalformedPayload {
-                code: 0x6E,
-                reason: "COMSET requires 5 bytes",
-            });
-        }
+        require_exact_len(data, 5, 0x6E)?;
         Ok(Self {
             address: data[0],
             baud: u32::from_le_bytes([data[1], data[2], data[3], data[4]]),

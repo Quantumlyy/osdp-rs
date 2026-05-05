@@ -5,6 +5,7 @@
 //! Body is a 16-bit little-endian byte count.
 
 use crate::error::Error;
+use crate::payload_util::require_exact_len;
 use alloc::vec::Vec;
 
 /// `osdp_ACURXSIZE` body.
@@ -22,12 +23,7 @@ impl AcuRxSize {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() != 2 {
-            return Err(Error::MalformedPayload {
-                code: 0x7B,
-                reason: "ACURXSIZE requires 2 bytes",
-            });
-        }
+        require_exact_len(data, 2, 0x7B)?;
         Ok(Self {
             max_size: u16::from_le_bytes([data[0], data[1]]),
         })
@@ -50,7 +46,7 @@ mod tests {
     fn decode_rejects_short() {
         assert!(matches!(
             AcuRxSize::decode(&[0x10]),
-            Err(Error::MalformedPayload { code: 0x7B, .. })
+            Err(Error::PayloadLength { code: 0x7B, .. })
         ));
     }
 }

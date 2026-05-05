@@ -39,6 +39,9 @@ pub mod packet;
 pub mod transport;
 
 #[cfg(feature = "alloc")]
+mod payload_util;
+
+#[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 pub mod command;
 #[cfg(feature = "alloc")]

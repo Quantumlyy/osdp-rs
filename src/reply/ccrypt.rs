@@ -5,6 +5,7 @@
 //! Body: `cUID (8) || RND.B (8) || ClientCryptogram (16)`.
 
 use crate::error::Error;
+use crate::payload_util::require_exact_len;
 use alloc::vec::Vec;
 
 /// `osdp_CCRYPT` body.
@@ -30,12 +31,7 @@ impl CCrypt {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() != 32 {
-            return Err(Error::MalformedPayload {
-                code: 0x76,
-                reason: "CCRYPT requires 32 bytes",
-            });
-        }
+        require_exact_len(data, 32, 0x76)?;
         let mut cuid = [0u8; 8];
         cuid.copy_from_slice(&data[..8]);
         let mut rnd_b = [0u8; 8];
@@ -73,7 +69,7 @@ mod tests {
     fn decode_rejects_wrong_length() {
         assert!(matches!(
             CCrypt::decode(&[0; 31]),
-            Err(Error::MalformedPayload { code: 0x76, .. })
+            Err(Error::PayloadLength { code: 0x76, .. })
         ));
     }
 }

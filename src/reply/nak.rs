@@ -6,6 +6,7 @@
 //! completion-code array (only when error code is `0x09`).
 
 use crate::error::Error;
+use crate::payload_util::require_at_least;
 use alloc::vec::Vec;
 
 /// NAK error code (Table 47).
@@ -84,12 +85,7 @@ impl Nak {
     /// silently dropping the byte (NAK arriving with an unknown code is
     /// usually a sign of bus chaos worth surfacing).
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.is_empty() {
-            return Err(Error::MalformedPayload {
-                code: 0x41,
-                reason: "NAK requires at least 1 byte",
-            });
-        }
+        require_at_least(data, 1, 0x41)?;
         let error = NakErrorCode::from_byte(data[0])?;
         let completion_codes = if error == NakErrorCode::UnableToProcessCommandRecord {
             data[1..].to_vec()

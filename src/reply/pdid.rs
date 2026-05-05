@@ -12,6 +12,7 @@
 //! ```
 
 use crate::error::Error;
+use crate::payload_util::require_exact_len;
 use alloc::vec::Vec;
 
 /// `osdp_PDID` body.
@@ -46,12 +47,7 @@ impl PdId {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() != Self::WIRE_LEN {
-            return Err(Error::MalformedPayload {
-                code: 0x45,
-                reason: "PDID requires 12 bytes",
-            });
-        }
+        require_exact_len(data, Self::WIRE_LEN, 0x45)?;
         let mut vendor_oui = [0u8; 3];
         vendor_oui.copy_from_slice(&data[..3]);
         let mut firmware = [0u8; 3];

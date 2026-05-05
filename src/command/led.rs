@@ -6,6 +6,7 @@
 //! "temporary" control, then a 6-byte "permanent" control).
 
 use crate::error::Error;
+use crate::payload_util::require_positive_multiple_of;
 use alloc::vec::Vec;
 
 /// LED color values — Table 18.
@@ -165,12 +166,7 @@ impl LedControl {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.is_empty() || data.len() % LedRecord::WIRE_LEN != 0 {
-            return Err(Error::MalformedPayload {
-                code: 0x69,
-                reason: "LED payload must be a multiple of 14 bytes",
-            });
-        }
+        require_positive_multiple_of(data, LedRecord::WIRE_LEN, 0x69)?;
         let records = data
             .chunks_exact(LedRecord::WIRE_LEN)
             .map(LedRecord::decode)

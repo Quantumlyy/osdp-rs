@@ -3,6 +3,7 @@
 //! # Spec: §7.17, Annex D.4
 
 use crate::error::Error;
+use crate::payload_util::require_exact_len;
 use alloc::vec::Vec;
 
 /// `osdp_RMAC_I` body.
@@ -20,12 +21,7 @@ impl RMacI {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() != 16 {
-            return Err(Error::MalformedPayload {
-                code: 0x78,
-                reason: "RMAC_I requires 16 bytes",
-            });
-        }
+        require_exact_len(data, 16, 0x78)?;
         let mut r_mac_i = [0u8; 16];
         r_mac_i.copy_from_slice(data);
         Ok(Self { r_mac_i })
@@ -50,7 +46,7 @@ mod tests {
     fn decode_rejects_wrong_length() {
         assert!(matches!(
             RMacI::decode(&[0; 15]),
-            Err(Error::MalformedPayload { code: 0x78, .. })
+            Err(Error::PayloadLength { code: 0x78, .. })
         ));
     }
 }

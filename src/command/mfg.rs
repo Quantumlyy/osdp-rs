@@ -5,6 +5,7 @@
 //! Body is `OUI (3 bytes)` + opaque vendor data.
 
 use crate::error::Error;
+use crate::payload_util::require_at_least;
 use alloc::vec::Vec;
 
 /// `osdp_MFG` body.
@@ -27,12 +28,7 @@ impl Mfg {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() < 3 {
-            return Err(Error::MalformedPayload {
-                code: 0x80,
-                reason: "MFG requires 3-byte OUI",
-            });
-        }
+        require_at_least(data, 3, 0x80)?;
         let mut oui = [0u8; 3];
         oui.copy_from_slice(&data[..3]);
         Ok(Self {
@@ -72,7 +68,7 @@ mod tests {
     fn decode_rejects_short_oui() {
         assert!(matches!(
             Mfg::decode(&[0x00, 0x06]),
-            Err(Error::MalformedPayload { code: 0x80, .. })
+            Err(Error::PayloadTooShort { code: 0x80, .. })
         ));
     }
 }

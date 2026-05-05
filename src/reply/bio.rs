@@ -4,6 +4,7 @@
 
 use crate::command::{BioFormat, BioType};
 use crate::error::Error;
+use crate::payload_util::{require_at_least, require_exact_len};
 use alloc::vec::Vec;
 
 /// `osdp_BIOREADR` body.
@@ -42,12 +43,7 @@ impl BioReadR {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() < 6 {
-            return Err(Error::MalformedPayload {
-                code: 0x57,
-                reason: "BIOREADR requires at least 6 bytes",
-            });
-        }
+        require_at_least(data, 6, 0x57)?;
         let length = u16::from_le_bytes([data[4], data[5]]) as usize;
         if data.len() != 6 + length {
             return Err(Error::MalformedPayload {
@@ -84,12 +80,7 @@ impl BioMatchR {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() != 3 {
-            return Err(Error::MalformedPayload {
-                code: 0x58,
-                reason: "BIOMATCHR requires 3 bytes",
-            });
-        }
+        require_exact_len(data, 3, 0x58)?;
         Ok(Self {
             reader: data[0],
             result: data[1],
@@ -143,7 +134,7 @@ mod tests {
     fn biomatchr_rejects_wrong_length() {
         assert!(matches!(
             BioMatchR::decode(&[0x00, 0x01]),
-            Err(Error::MalformedPayload { code: 0x58, .. })
+            Err(Error::PayloadLength { code: 0x58, .. })
         ));
     }
 }

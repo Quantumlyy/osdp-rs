@@ -3,6 +3,7 @@
 //! # Spec: §7.12
 
 use crate::error::Error;
+use crate::payload_util::require_at_least;
 use alloc::vec::Vec;
 
 /// `osdp_KEYPAD` body.
@@ -34,12 +35,7 @@ impl Keypad {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() < 2 {
-            return Err(Error::MalformedPayload {
-                code: 0x53,
-                reason: "KEYPAD requires at least 2 bytes",
-            });
-        }
+        require_at_least(data, 2, 0x53)?;
         let digit_count = data[1];
         if data.len() != 2 + digit_count as usize {
             return Err(Error::MalformedPayload {

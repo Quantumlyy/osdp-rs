@@ -3,6 +3,7 @@
 //! # Spec: §6.14, §6.15, Tables 24–25
 
 use crate::error::Error;
+use crate::payload_util::{require_at_least, require_exact_len};
 use alloc::vec::Vec;
 
 /// Biometric type code (Table 24).
@@ -115,12 +116,7 @@ impl BioRead {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() != 4 {
-            return Err(Error::MalformedPayload {
-                code: 0x73,
-                reason: "BIOREAD requires 4 bytes",
-            });
-        }
+        require_exact_len(data, 4, 0x73)?;
         Ok(Self {
             reader: data[0],
             bio_type: BioType::from_byte(data[1]),
@@ -166,12 +162,7 @@ impl BioMatch {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() < 6 {
-            return Err(Error::MalformedPayload {
-                code: 0x74,
-                reason: "BIOMATCH requires at least 6 bytes",
-            });
-        }
+        require_at_least(data, 6, 0x74)?;
         let length = u16::from_le_bytes([data[4], data[5]]) as usize;
         if data.len() != 6 + length {
             return Err(Error::MalformedPayload {
@@ -210,7 +201,7 @@ mod tests {
     fn bioread_rejects_wrong_length() {
         assert!(matches!(
             BioRead::decode(&[0; 5]),
-            Err(Error::MalformedPayload { code: 0x73, .. })
+            Err(Error::PayloadLength { code: 0x73, .. })
         ));
     }
 

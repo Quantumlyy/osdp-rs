@@ -11,6 +11,7 @@
 //! ```
 
 use crate::error::Error;
+use crate::payload_util::require_positive_multiple_of;
 use alloc::vec::Vec;
 
 /// Output control codes — Table 14.
@@ -101,12 +102,7 @@ impl OutputControl {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.is_empty() || data.len() % OutputRecord::WIRE_LEN != 0 {
-            return Err(Error::MalformedPayload {
-                code: 0x68,
-                reason: "OUT payload must be a multiple of 4 bytes",
-            });
-        }
+        require_positive_multiple_of(data, OutputRecord::WIRE_LEN, 0x68)?;
         let mut records = Vec::with_capacity(data.len() / OutputRecord::WIRE_LEN);
         for chunk in data.chunks_exact(OutputRecord::WIRE_LEN) {
             records.push(OutputRecord {
@@ -147,7 +143,7 @@ mod tests {
     fn decode_rejects_misaligned_payload() {
         assert!(matches!(
             OutputControl::decode(&[0x00, 0x00, 0x00]),
-            Err(Error::MalformedPayload { code: 0x68, .. })
+            Err(Error::PayloadNotMultiple { code: 0x68, .. })
         ));
     }
 

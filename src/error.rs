@@ -65,6 +65,33 @@ pub enum Error {
         /// One-line explanation.
         reason: &'static str,
     },
+    /// Payload length differs from the fixed length the message defines.
+    PayloadLength {
+        /// Command or reply code.
+        code: u8,
+        /// Bytes the spec mandates.
+        expected: usize,
+        /// Bytes actually delivered.
+        got: usize,
+    },
+    /// Payload is shorter than the minimum needed to parse the header.
+    PayloadTooShort {
+        /// Command or reply code.
+        code: u8,
+        /// Minimum bytes required.
+        min: usize,
+        /// Bytes actually delivered.
+        got: usize,
+    },
+    /// Record-array payload is not a positive multiple of the record size.
+    PayloadNotMultiple {
+        /// Command or reply code.
+        code: u8,
+        /// Per-record block size in bytes.
+        block: usize,
+        /// Bytes actually delivered.
+        got: usize,
+    },
     /// Multi-part receiver detected an invariant violation.
     Multipart(MultipartError),
     /// Secure-channel state machine rejected an event.
@@ -172,6 +199,28 @@ impl fmt::Display for Error {
             Error::UnknownReply(c) => write!(f, "unknown reply code: {c:#04x}"),
             Error::MalformedPayload { code, reason } => {
                 write!(f, "malformed payload for {code:#04x}: {reason}")
+            }
+            Error::PayloadLength {
+                code,
+                expected,
+                got,
+            } => {
+                write!(
+                    f,
+                    "payload length for {code:#04x}: expected {expected}, got {got}"
+                )
+            }
+            Error::PayloadTooShort { code, min, got } => {
+                write!(
+                    f,
+                    "payload for {code:#04x} too short: need at least {min}, got {got}"
+                )
+            }
+            Error::PayloadNotMultiple { code, block, got } => {
+                write!(
+                    f,
+                    "payload length for {code:#04x}: {got} is not a positive multiple of {block}"
+                )
             }
             Error::Multipart(e) => write!(f, "multipart: {e:?}"),
             Error::SecureSession(e) => write!(f, "secure session: {e:?}"),

@@ -8,6 +8,7 @@
 //! # Spec: §6.4 – §6.7
 
 use crate::error::Error;
+use crate::payload_util::require_exact_len;
 use alloc::vec::Vec;
 
 macro_rules! empty_status {
@@ -24,12 +25,7 @@ macro_rules! empty_status {
 
             /// Decode (must be empty).
             pub fn decode(data: &[u8]) -> Result<Self, Error> {
-                if !data.is_empty() {
-                    return Err(Error::MalformedPayload {
-                        code: $code,
-                        reason: concat!($name, " has no payload"),
-                    });
-                }
+                require_exact_len(data, 0, $code)?;
                 Ok(Self)
             }
         }
@@ -55,7 +51,7 @@ mod tests {
     fn lstat_rejects_payload() {
         assert!(matches!(
             LocalStatus::decode(&[0x00]),
-            Err(Error::MalformedPayload { code: 0x64, .. })
+            Err(Error::PayloadLength { code: 0x64, .. })
         ));
     }
 
@@ -63,7 +59,7 @@ mod tests {
     fn istat_rejects_payload() {
         assert!(matches!(
             InputStatus::decode(&[0x00]),
-            Err(Error::MalformedPayload { code: 0x65, .. })
+            Err(Error::PayloadLength { code: 0x65, .. })
         ));
     }
 
@@ -71,7 +67,7 @@ mod tests {
     fn ostat_rejects_payload() {
         assert!(matches!(
             OutputStatus::decode(&[0x00]),
-            Err(Error::MalformedPayload { code: 0x66, .. })
+            Err(Error::PayloadLength { code: 0x66, .. })
         ));
     }
 
@@ -79,7 +75,7 @@ mod tests {
     fn rstat_rejects_payload() {
         assert!(matches!(
             ReaderStatus::decode(&[0x00]),
-            Err(Error::MalformedPayload { code: 0x67, .. })
+            Err(Error::PayloadLength { code: 0x67, .. })
         ));
     }
 }

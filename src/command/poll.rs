@@ -3,6 +3,7 @@
 //! # Spec: §6.1
 
 use crate::error::Error;
+use crate::payload_util::require_exact_len;
 use alloc::vec::Vec;
 
 /// Empty body of the POLL command.
@@ -17,12 +18,7 @@ impl Poll {
 
     /// Decode (must be empty).
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if !data.is_empty() {
-            return Err(Error::MalformedPayload {
-                code: 0x60,
-                reason: "POLL has no payload",
-            });
-        }
+        require_exact_len(data, 0, 0x60)?;
         Ok(Self)
     }
 }
@@ -45,7 +41,7 @@ mod tests {
     fn decode_rejects_payload() {
         assert!(matches!(
             Poll::decode(&[0x00]),
-            Err(Error::MalformedPayload { code: 0x60, .. })
+            Err(Error::PayloadLength { code: 0x60, .. })
         ));
     }
 }

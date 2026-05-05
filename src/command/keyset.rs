@@ -14,6 +14,7 @@
 //! of the key (16 for AES-128).
 
 use crate::error::Error;
+use crate::payload_util::require_at_least;
 use alloc::vec::Vec;
 
 /// `osdp_KEYSET` body.
@@ -51,12 +52,7 @@ impl KeySet {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() < 2 {
-            return Err(Error::MalformedPayload {
-                code: 0x75,
-                reason: "KEYSET requires at least 2 bytes",
-            });
-        }
+        require_at_least(data, 2, 0x75)?;
         let key_len = data[1] as usize;
         if data.len() != 2 + key_len {
             return Err(Error::MalformedPayload {
@@ -90,7 +86,7 @@ mod tests {
     fn decode_rejects_short() {
         assert!(matches!(
             KeySet::decode(&[0x01]),
-            Err(Error::MalformedPayload { code: 0x75, .. })
+            Err(Error::PayloadTooShort { code: 0x75, .. })
         ));
     }
 

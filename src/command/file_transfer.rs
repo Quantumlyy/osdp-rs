@@ -3,6 +3,7 @@
 //! # Spec: §6.21
 
 use crate::error::Error;
+use crate::payload_util::require_at_least;
 use alloc::vec::Vec;
 
 /// `osdp_FILETRANSFER` body.
@@ -38,12 +39,7 @@ impl FileTransfer {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() < 11 {
-            return Err(Error::MalformedPayload {
-                code: 0x7C,
-                reason: "FILETRANSFER requires at least 11 bytes",
-            });
-        }
+        require_at_least(data, 11, 0x7C)?;
         let total_size = u32::from_le_bytes([data[1], data[2], data[3], data[4]]);
         let offset = u32::from_le_bytes([data[5], data[6], data[7], data[8]]);
         let frag_len = u16::from_le_bytes([data[9], data[10]]) as usize;
@@ -89,7 +85,7 @@ mod tests {
     fn decode_rejects_short_header() {
         assert!(matches!(
             FileTransfer::decode(&[0; 10]),
-            Err(Error::MalformedPayload { code: 0x7C, .. })
+            Err(Error::PayloadTooShort { code: 0x7C, .. })
         ));
     }
 

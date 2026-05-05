@@ -6,6 +6,7 @@
 //! `osdp_COMSET`.
 
 use crate::error::Error;
+use crate::payload_util::require_exact_len;
 use alloc::vec::Vec;
 
 /// `osdp_COM` body.
@@ -28,12 +29,7 @@ impl Com {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() != 5 {
-            return Err(Error::MalformedPayload {
-                code: 0x54,
-                reason: "COM requires 5 bytes",
-            });
-        }
+        require_exact_len(data, 5, 0x54)?;
         Ok(Self {
             address: data[0],
             baud: u32::from_le_bytes([data[1], data[2], data[3], data[4]]),
@@ -60,7 +56,7 @@ mod tests {
     fn decode_rejects_wrong_length() {
         assert!(matches!(
             Com::decode(&[0; 4]),
-            Err(Error::MalformedPayload { code: 0x54, .. })
+            Err(Error::PayloadLength { code: 0x54, .. })
         ));
     }
 }

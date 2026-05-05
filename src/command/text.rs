@@ -11,6 +11,7 @@
 //! ```
 
 use crate::error::Error;
+use crate::payload_util::require_at_least;
 use alloc::vec::Vec;
 
 /// Text command codes (Table 21).
@@ -100,12 +101,7 @@ impl Text {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() < 6 {
-            return Err(Error::MalformedPayload {
-                code: 0x6B,
-                reason: "TEXT requires at least 6 bytes",
-            });
-        }
+        require_at_least(data, 6, 0x6B)?;
         let length = data[5] as usize;
         if data.len() != 6 + length {
             return Err(Error::MalformedPayload {

@@ -7,6 +7,7 @@
 //! when their payload exceeds a single packet's RX size.
 
 use crate::error::Error;
+use crate::payload_util::require_at_least;
 use alloc::vec::Vec;
 
 /// `osdp_PIVDATA` body.
@@ -38,12 +39,7 @@ impl PivData {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() < 6 {
-            return Err(Error::MalformedPayload {
-                code: 0xA3,
-                reason: "PIVDATA requires at least 6 bytes",
-            });
-        }
+        require_at_least(data, 6, 0xA3)?;
         let mut object_id = [0u8; 3];
         object_id.copy_from_slice(&data[..3]);
         Ok(Self {
@@ -78,12 +74,7 @@ impl GenAuth {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() < 2 {
-            return Err(Error::MalformedPayload {
-                code: 0xA4,
-                reason: "GENAUTH requires at least 2 bytes",
-            });
-        }
+        require_at_least(data, 2, 0xA4)?;
         Ok(Self {
             algorithm: data[0],
             key_ref: data[1],
@@ -134,7 +125,7 @@ mod tests {
     fn pivdata_rejects_short_header() {
         assert!(matches!(
             PivData::decode(&[0; 5]),
-            Err(Error::MalformedPayload { code: 0xA3, .. })
+            Err(Error::PayloadTooShort { code: 0xA3, .. })
         ));
     }
 
@@ -154,7 +145,7 @@ mod tests {
     fn genauth_rejects_short() {
         assert!(matches!(
             GenAuth::decode(&[0x07]),
-            Err(Error::MalformedPayload { code: 0xA4, .. })
+            Err(Error::PayloadTooShort { code: 0xA4, .. })
         ));
     }
 

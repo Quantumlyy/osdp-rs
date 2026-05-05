@@ -5,6 +5,7 @@
 //! Body is a single `Reserved` byte (always `0x00`).
 
 use crate::error::Error;
+use crate::payload_util::require_exact_len;
 use alloc::vec::Vec;
 
 /// `osdp_ID` body.
@@ -27,12 +28,7 @@ impl Id {
 
     /// Decode.
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
-        if data.len() != 1 {
-            return Err(Error::MalformedPayload {
-                code: 0x61,
-                reason: "ID requires 1-byte reserved field",
-            });
-        }
+        require_exact_len(data, 1, 0x61)?;
         Ok(Self { reserved: data[0] })
     }
 }
@@ -58,7 +54,7 @@ mod tests {
     fn decode_rejects_wrong_length() {
         assert!(matches!(
             Id::decode(&[]),
-            Err(Error::MalformedPayload { code: 0x61, .. })
+            Err(Error::PayloadLength { code: 0x61, .. })
         ));
     }
 }
