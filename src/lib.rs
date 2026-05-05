@@ -10,6 +10,8 @@
 //!
 //! # Layering
 //!
+//! See [`architecture`] for a rendered diagram of how these modules relate.
+//!
 //! - [`packet`] — wire framing (SOM, header, SCB, MAC, trailer)
 //! - [`command`] / [`reply`] — typed messages
 //! - [`multipart`] — RFC §5.10 multi-part assembly / disassembly
@@ -37,6 +39,39 @@ pub mod clock;
 pub mod error;
 pub mod packet;
 pub mod transport;
+
+/// Crate architecture diagram.
+///
+/// `osdp-rs` layers responsibilities so that the high-level state machines
+/// in [`driver`] can stay independent of the wire format and the I/O
+/// substrate. Every arrow points "uses".
+///
+#[cfg_attr(feature = "_docs", aquamarine::aquamarine)]
+/// ```mermaid
+/// flowchart TB
+///     APP([Application])
+///     subgraph drivers["driver — high-level state machines"]
+///         ACU[acu::Acu]
+///         PD[pd::Pd]
+///     end
+///     subgraph messages["typed messages"]
+///         CMD[command]
+///         REP[reply]
+///         MP[multipart]
+///     end
+///     subgraph wire["wire layer"]
+///         PKT[packet]
+///         SEC["secure (Annex D)"]
+///     end
+///     TR[transport]
+///     APP --> drivers
+///     drivers --> messages
+///     drivers --> wire
+///     drivers --> TR
+///     messages --> wire
+///     wire --> TR
+/// ```
+pub mod architecture {}
 
 #[cfg(feature = "alloc")]
 mod payload_util;
