@@ -53,7 +53,7 @@ fn key_template(tag1: u8, tag2: u8, rnd_a: &[u8; 8]) -> Block {
 }
 
 /// Derived session keys.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct SessionKeys {
     /// `S-ENC` — encryption key.
     pub s_enc: [u8; 16],
