@@ -62,8 +62,8 @@ pub fn seal(
     };
     builder.encode_with_mac(|bytes| {
         let full = session.mac(bytes);
-        let mut tag = [0u8; 4];
-        tag.copy_from_slice(&full[..4]);
+        let mut tag = [0u8; crate::packet::MAC_LEN];
+        tag.copy_from_slice(&full[..crate::packet::MAC_LEN]);
         tag
     })
 }

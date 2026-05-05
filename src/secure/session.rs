@@ -160,14 +160,18 @@ impl Session<Secure> {
     }
 
     /// Verify a received MAC against our locally-computed value.
-    pub fn verify(&mut self, bytes: &[u8], wire_mac: &[u8; 4]) -> Result<(), SecureSessionError> {
+    pub fn verify(
+        &mut self,
+        bytes: &[u8],
+        wire_mac: &[u8; crate::packet::MAC_LEN],
+    ) -> Result<(), SecureSessionError> {
         let computed = cbc_mac(
             bytes,
             &self.last_their_mac,
             &self.keys.s_mac1,
             &self.keys.s_mac2,
         );
-        if computed[..4].ct_eq(wire_mac).unwrap_u8() == 0 {
+        if computed[..crate::packet::MAC_LEN].ct_eq(wire_mac).unwrap_u8() == 0 {
             return Err(SecureSessionError::BadCryptogram);
         }
         self.last_their_mac = computed;

@@ -12,6 +12,17 @@ use crate::reply::{Reply, ReplyCode};
 use crate::transport::Transport;
 use alloc::vec::Vec;
 
+/// Bytes pulled from the transport per `Transport::read` call. Sized so a
+/// minimal frame fits in a single read but small enough that the stack
+/// footprint stays modest.
+const RX_CHUNK_LEN: usize = 64;
+
+/// Number of consecutive `Transport::read(..) -> Ok(0)` returns we tolerate
+/// inside a per-attempt budget before yielding control back to the caller as
+/// `Error::Timeout`. This stops us from spinning on a non-blocking transport
+/// that has nothing to deliver.
+const MAX_EMPTY_READS: u8 = 4;
+
 /// Per-PD bookkeeping owned by the ACU driver.
 #[derive(Debug, Clone)]
 pub struct PdState {
@@ -169,16 +180,25 @@ impl<T: Transport, C: Clock> Acu<T, C> {
     /// check the deadline and either return `Timeout` or immediately
     /// return — the caller is expected to call us again later.
     pub fn receive(&mut self, pd: &mut PdState) -> Result<Reply, Error> {
+        let (reply_code, data) = self.recv_loop()?;
+        let now = self.clock.now_ms();
+        pd.mark_seen(now);
+        pd.bump_sqn();
+        Reply::decode(reply_code, &data)
+    }
+
+    /// Inner read/parse loop shared by [`Self::receive`] and
+    /// [`Self::recv_one_with_sqn`]. Drains the transport into `rx_buf` until a
+    /// complete packet can be parsed, the per-attempt reply-delay budget is
+    /// exhausted, or the transport has signalled "no data" too many times.
+    fn recv_loop(&mut self) -> Result<(ReplyCode, Vec<u8>), Error> {
         let start = self.clock.now_ms();
         let mut empty_reads = 0u8;
         loop {
-            if let Some((reply_code, data)) = self.try_parse_packet()? {
-                let now = self.clock.now_ms();
-                pd.mark_seen(now);
-                pd.bump_sqn();
-                return Reply::decode(reply_code, &data);
+            if let Some(packet) = self.try_parse_packet()? {
+                return Ok(packet);
             }
-            let mut tmp = [0u8; 64];
+            let mut tmp = [0u8; RX_CHUNK_LEN];
             let n = self.transport.read(&mut tmp)?;
             if n > 0 {
                 self.rx_buf.extend_from_slice(&tmp[..n]);
@@ -189,10 +209,7 @@ impl<T: Transport, C: Clock> Acu<T, C> {
                 return Err(Error::Timeout);
             }
             empty_reads = empty_reads.saturating_add(1);
-            // Nonblocking transports signal "no data" via Ok(0); after a few
-            // such returns within budget we hand control back to the caller
-            // (still as Timeout) rather than spin.
-            if empty_reads >= 4 {
+            if empty_reads >= MAX_EMPTY_READS {
                 return Err(Error::Timeout);
             }
         }
@@ -262,27 +279,8 @@ impl<T: Transport, C: Clock> Acu<T, C> {
     /// Same as [`Self::receive`] but without mutating any [`PdState`] (used
     /// inside [`Self::exchange`] which has its own bookkeeping).
     fn recv_one_with_sqn(&mut self, _expected_sqn: Sqn) -> Result<Reply, Error> {
-        let start = self.clock.now_ms();
-        let mut empty_reads = 0u8;
-        loop {
-            if let Some((reply_code, data)) = self.try_parse_packet()? {
-                return Reply::decode(reply_code, &data);
-            }
-            let mut tmp = [0u8; 64];
-            let n = self.transport.read(&mut tmp)?;
-            if n > 0 {
-                self.rx_buf.extend_from_slice(&tmp[..n]);
-                empty_reads = 0;
-                continue;
-            }
-            if self.clock.now_ms().saturating_sub(start) >= self.reply_delay_ms as u64 {
-                return Err(Error::Timeout);
-            }
-            empty_reads = empty_reads.saturating_add(1);
-            if empty_reads >= 4 {
-                return Err(Error::Timeout);
-            }
-        }
+        let (reply_code, data) = self.recv_loop()?;
+        Reply::decode(reply_code, &data)
     }
 
     fn try_parse_packet(&mut self) -> Result<Option<(ReplyCode, Vec<u8>)>, Error> {
