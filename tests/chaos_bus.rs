@@ -12,36 +12,19 @@
 //!   the PD off-line within 8 s of simulated time rather than spinning
 //!   forever.
 
+mod common;
+
+use common::{AlwaysAck, Lcg};
 use osdp::clock::MockClock;
 use osdp::command::{Command, Poll};
 use osdp::driver::acu::{Acu, ExchangeOutcome, PdState, RetryConfig};
-use osdp::driver::pd::{Pd, PdHandler};
-use osdp::reply::{Ack, Reply};
+use osdp::driver::pd::Pd;
+use osdp::reply::Reply;
 use osdp::transport::VecTransport;
 
 extern crate alloc;
 use alloc::collections::VecDeque;
 use alloc::vec::Vec;
-
-/// A tiny LCG so tests don't need a real RNG crate.
-#[derive(Debug, Clone)]
-struct Lcg(u64);
-impl Lcg {
-    fn new(seed: u64) -> Self {
-        Self(seed | 1)
-    }
-    fn next_u32(&mut self) -> u32 {
-        self.0 = self
-            .0
-            .wrapping_mul(6364136223846793005)
-            .wrapping_add(1442695040888963407);
-        (self.0 >> 32) as u32
-    }
-    /// Uniform 0..1 step.
-    fn next_unit(&mut self) -> f64 {
-        (self.next_u32() as f64) / (u32::MAX as f64)
-    }
-}
 
 /// Per-byte chaos parameters.
 #[derive(Debug, Clone, Copy)]
@@ -83,13 +66,6 @@ impl Middleman {
             }
         }
         out
-    }
-}
-
-struct AlwaysAck;
-impl PdHandler for AlwaysAck {
-    fn on_command(&mut self, _command: &Command) -> Reply {
-        Reply::Ack(Ack)
     }
 }
 

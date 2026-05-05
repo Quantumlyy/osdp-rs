@@ -32,12 +32,6 @@ impl PdHandler for LoopbackPd {
     }
 }
 
-/// Ferry bytes from one end's outgoing to the other end's incoming.
-fn shuffle(from: &mut VecTransport, to: &mut VecTransport) {
-    let bytes: Vec<u8> = from.outgoing.drain(..).collect();
-    to.incoming.extend(bytes);
-}
-
 #[test]
 fn poll_then_id_round_trip() {
     let acu_port = VecTransport::new();
@@ -51,12 +45,12 @@ fn poll_then_id_round_trip() {
 
     // ACU sends POLL.
     acu.send_to(0x05, &mut state, &Command::Poll(Poll)).unwrap();
-    shuffle(acu.transport(), pd.transport());
+    acu.transport().shuffle_to(pd.transport());
 
     // PD processes and replies.
     let processed = pd.poll_once().unwrap();
     assert!(processed);
-    shuffle(pd.transport(), acu.transport());
+    pd.transport().shuffle_to(acu.transport());
 
     // ACU receives ACK.
     let reply = acu.receive(&mut state).unwrap();
@@ -66,9 +60,9 @@ fn poll_then_id_round_trip() {
     // ACU now sends ID.
     acu.send_to(0x05, &mut state, &Command::Id(Id::standard()))
         .unwrap();
-    shuffle(acu.transport(), pd.transport());
+    acu.transport().shuffle_to(pd.transport());
     pd.poll_once().unwrap();
-    shuffle(pd.transport(), acu.transport());
+    pd.transport().shuffle_to(acu.transport());
 
     let reply = acu.receive(&mut state).unwrap();
     match reply {
@@ -93,9 +87,9 @@ fn pd_repeats_reply_on_duplicate_sqn() {
 
     // First exchange.
     acu.send_to(0x07, &mut state, &Command::Poll(Poll)).unwrap();
-    shuffle(acu.transport(), pd.transport());
+    acu.transport().shuffle_to(pd.transport());
     pd.poll_once().unwrap();
-    shuffle(pd.transport(), acu.transport());
+    pd.transport().shuffle_to(acu.transport());
     let _ = acu.receive(&mut state).unwrap();
 
     // ACU "loses" the reply and asks again with the same SQN. We force
@@ -103,7 +97,7 @@ fn pd_repeats_reply_on_duplicate_sqn() {
     state.next_sqn = osdp::Sqn::new(0).unwrap();
 
     let bytes_first = acu.send_to(0x07, &mut state, &Command::Poll(Poll)).unwrap();
-    shuffle(acu.transport(), pd.transport());
+    acu.transport().shuffle_to(pd.transport());
     pd.poll_once().unwrap();
 
     let pd_outgoing: Vec<u8> = pd.transport().outgoing.drain(..).collect();
