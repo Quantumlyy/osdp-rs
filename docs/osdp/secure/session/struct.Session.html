@@ -4,7 +4,7 @@ the session is in. Each transition consumes the old <code>Session</code> and yie
 a new one in the next state — calling methods out of order is therefore a
 <em>compile</em> error rather than a runtime fault.</p>
 <div class="example-wrap"><pre class="language-mermaid"><code>stateDiagram-v2
-    [*] --&gt; Disconnected: Session::new(scbk)
+    [*] --&gt; Disconnected: new(scbk)
     Disconnected --&gt; Challenged: challenge(RND.A)
     Challenged --&gt; Cryptogrammed: receive_ccrypt(ccrypt) ✔
     Challenged --&gt; Disconnected: receive_ccrypt(ccrypt) ✘&lt;br/&gt;BadCryptogram
