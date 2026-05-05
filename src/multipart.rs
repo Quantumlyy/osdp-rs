@@ -106,6 +106,20 @@ mod alloc_impls {
         /// New splitter. `fragment_size` is the maximum payload size that
         /// fits into a single packet (excluding the 6-byte multi-part
         /// header).
+        ///
+        /// # Example
+        ///
+        /// ```
+        /// use osdp::multipart::{MultipartHeader, MultipartTx};
+        /// let body = b"hello, multi-part world";
+        /// let tx = MultipartTx::new(body, 8)?;
+        /// let parts: Vec<_> = tx.collect();
+        /// assert_eq!(parts.len(), 3);
+        /// assert_eq!(parts[0].0.total, body.len() as u16);
+        /// assert_eq!(parts[0].0.offset, 0);
+        /// assert_eq!(parts[0].1, &body[..8]);
+        /// # Ok::<(), osdp::Error>(())
+        /// ```
         pub fn new(body: &'a [u8], fragment_size: u16) -> Result<Self, Error> {
             if fragment_size == 0 {
                 return Err(Error::Multipart(MultipartError::BadFragmentSize));

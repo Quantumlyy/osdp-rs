@@ -106,6 +106,16 @@ impl<S> Session<S> {
 
 impl Session<Disconnected> {
     /// Begin a new session, holding the SCBK we will use.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use osdp::secure::{SCBK_D, Session};
+    /// use osdp::secure::session::Disconnected;
+    /// let session = Session::<Disconnected>::new(SCBK_D);
+    /// // The next step is `session.challenge(rnd_a)` once we've sent osdp_CHLNG.
+    /// # let _ = session;
+    /// ```
     pub fn new(scbk: [u8; 16]) -> Self {
         Self {
             scbk,

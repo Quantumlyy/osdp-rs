@@ -20,6 +20,36 @@
 //! - [`driver`] — ACU and PD state machines
 //! - [`caps`] — Annex B function codes
 //!
+//! # Quick start
+//!
+//! Drive a PD at address `0x05` through one POLL exchange. The example uses
+//! [`transport::VecTransport`], so without a peer feeding bytes back the
+//! exchange will end in [`driver::acu::ExchangeOutcome::Timeout`] — wire it
+//! up to a real `Transport` (or another `VecTransport`, see
+//! `examples/loopback_poll.rs`) for a successful round-trip.
+//!
+//! ```
+//! use osdp::clock::SystemClock;
+//! use osdp::command::{Command, Poll};
+//! use osdp::driver::acu::{Acu, ExchangeOutcome, PdState};
+//! use osdp::reply::Reply;
+//! use osdp::transport::VecTransport;
+//!
+//! let mut acu = Acu::new(VecTransport::new(), SystemClock::new());
+//! let mut pd = PdState::default();
+//! match acu.exchange(0x05, &mut pd, &Command::Poll(Poll))? {
+//!     ExchangeOutcome::Reply(Reply::Ack(_)) => { /* PD alive */ }
+//!     ExchangeOutcome::Busy => { /* PD asked us to back off */ }
+//!     ExchangeOutcome::Timeout => { /* no reply within budget */ }
+//!     ExchangeOutcome::Offline => { /* PD declared offline */ }
+//!     _ => {}
+//! }
+//! # Ok::<(), osdp::Error>(())
+//! ```
+//!
+//! For the secure-channel walk see `examples/handshake.rs`; for an end-to-end
+//! loopback that exercises SQN cycling see `examples/loopback_poll.rs`.
+//!
 //! # Specification cross-references
 //!
 //! All spec citations refer to *SIA OSDP v2.2* (©2020 Security Industry
