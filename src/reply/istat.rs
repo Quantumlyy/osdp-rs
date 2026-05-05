@@ -44,9 +44,6 @@ mod tests {
 
     #[test]
     fn empty_inputs_is_valid() {
-        assert_eq!(
-            IStatR::decode(&[]).unwrap(),
-            IStatR { inputs: Vec::new() }
-        );
+        assert_eq!(IStatR::decode(&[]).unwrap(), IStatR { inputs: Vec::new() });
     }
 }

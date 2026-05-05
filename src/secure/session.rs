@@ -186,7 +186,11 @@ impl Session<Secure> {
             &self.keys.s_mac1,
             &self.keys.s_mac2,
         );
-        if computed[..crate::packet::MAC_LEN].ct_eq(wire_mac).unwrap_u8() == 0 {
+        if computed[..crate::packet::MAC_LEN]
+            .ct_eq(wire_mac)
+            .unwrap_u8()
+            == 0
+        {
             return Err(SecureSessionError::BadCryptogram);
         }
         self.last_their_mac = computed;

@@ -71,7 +71,7 @@ mod tests {
     fn encode_rejects_count_disagreement() {
         let body = Keypad {
             reader: 0,
-            digit_count: 5, // claims 5
+            digit_count: 5,                  // claims 5
             digits: alloc::vec![b'1', b'2'], // but only carries 2
         };
         assert!(matches!(

@@ -103,10 +103,7 @@ mod tests {
             data: alloc::vec![0xDE, 0xAD],
         };
         let bytes = body.encode().unwrap();
-        assert_eq!(
-            bytes,
-            [0x01, 0x01, 0x02, 90, 0x02, 0x00, 0xDE, 0xAD]
-        );
+        assert_eq!(bytes, [0x01, 0x01, 0x02, 90, 0x02, 0x00, 0xDE, 0xAD]);
         assert_eq!(BioReadR::decode(&bytes).unwrap(), body);
     }
 
