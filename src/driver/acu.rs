@@ -180,7 +180,7 @@ impl<T: Transport, C: Clock> Acu<T, C> {
     /// check the deadline and either return `Timeout` or immediately
     /// return — the caller is expected to call us again later.
     pub fn receive(&mut self, pd: &mut PdState) -> Result<Reply, Error> {
-        let (reply_code, data) = self.recv_loop()?;
+        let (reply_code, _sqn, data) = self.recv_loop()?;
         let now = self.clock.now_ms();
         pd.mark_seen(now);
         pd.bump_sqn();
@@ -191,7 +191,10 @@ impl<T: Transport, C: Clock> Acu<T, C> {
     /// [`Self::recv_one_with_sqn`]. Drains the transport into `rx_buf` until a
     /// complete packet can be parsed, the per-attempt reply-delay budget is
     /// exhausted, or the transport has signalled "no data" too many times.
-    fn recv_loop(&mut self) -> Result<(ReplyCode, Vec<u8>), Error> {
+    ///
+    /// Returns the parsed reply code, the SQN it carried, and the raw DATA
+    /// bytes. SQN policy is left to the caller.
+    fn recv_loop(&mut self) -> Result<(ReplyCode, Sqn, Vec<u8>), Error> {
         let start = self.clock.now_ms();
         let mut empty_reads = 0u8;
         loop {
@@ -278,20 +281,31 @@ impl<T: Transport, C: Clock> Acu<T, C> {
 
     /// Same as [`Self::receive`] but without mutating any [`PdState`] (used
     /// inside [`Self::exchange`] which has its own bookkeeping).
-    fn recv_one_with_sqn(&mut self, _expected_sqn: Sqn) -> Result<Reply, Error> {
-        let (reply_code, data) = self.recv_loop()?;
+    ///
+    /// Enforces §5.7 / Table 2: the PD must echo the SQN we sent. `osdp_BUSY`
+    /// is the documented exception — it is always SQN=0 regardless of what
+    /// the ACU sent — so its SQN is not checked.
+    fn recv_one_with_sqn(&mut self, expected_sqn: Sqn) -> Result<Reply, Error> {
+        let (reply_code, parsed_sqn, data) = self.recv_loop()?;
+        if reply_code != ReplyCode::Busy && parsed_sqn != expected_sqn {
+            return Err(Error::SqnMismatch {
+                expected: expected_sqn.value(),
+                got: parsed_sqn.value(),
+            });
+        }
         Reply::decode(reply_code, &data)
     }
 
-    fn try_parse_packet(&mut self) -> Result<Option<(ReplyCode, Vec<u8>)>, Error> {
+    fn try_parse_packet(&mut self) -> Result<Option<(ReplyCode, Sqn, Vec<u8>)>, Error> {
         while let Some(som_pos) = self.rx_buf.iter().position(|&b| b == crate::SOM) {
             self.rx_buf.drain(..som_pos);
             match ParsedPacket::parse(&self.rx_buf) {
                 Ok((parsed, used)) => {
                     let code = ReplyCode::from_byte(parsed.code)?;
+                    let sqn = parsed.ctrl.sqn;
                     let data = parsed.data.to_vec();
                     self.rx_buf.drain(..used);
-                    return Ok(Some((code, data)));
+                    return Ok(Some((code, sqn, data)));
                 }
                 Err(Error::Truncated { .. }) => return Ok(None),
                 Err(Error::BadSom(_)) => {
@@ -362,5 +376,75 @@ mod tests {
         clock.set(crate::REPLY_DELAY_MS as u64 + 1);
         let outcome = acu.exchange(0x05, &mut pd, &Command::Poll(Poll)).unwrap();
         assert_eq!(outcome, ExchangeOutcome::Timeout);
+    }
+
+    #[test]
+    fn exchange_rejects_reply_with_wrong_sqn() {
+        // The ACU sends with SQN=1; we feed it back an ACK that claims SQN=2.
+        // Per §5.7 / Table 2 this is a stale/desync'd PD and must be rejected.
+        let clock = MockClock::new();
+        let mut transport = VecTransport::new();
+        let stale = PacketBuilder::plain(
+            Address::reply(0x05).unwrap(),
+            ControlByte::new(Sqn::new(2).unwrap(), CtrlFlags::USE_CRC),
+            crate::reply::ReplyCode::Ack.as_byte(),
+            alloc::vec::Vec::new(),
+        )
+        .encode()
+        .unwrap();
+        transport.feed(&stale);
+
+        let mut acu = Acu::new(transport, clock);
+        acu.retry = RetryConfig {
+            max_retries: 0,
+            overall_budget_ms: 0,
+        };
+        let mut pd = PdState {
+            next_sqn: Sqn::new(1).unwrap(),
+            ..Default::default()
+        };
+        pd.mark_seen(0);
+
+        let err = acu
+            .exchange(0x05, &mut pd, &Command::Poll(Poll))
+            .unwrap_err();
+        assert!(matches!(
+            err,
+            Error::SqnMismatch {
+                expected: 1,
+                got: 2
+            }
+        ));
+    }
+
+    #[test]
+    fn exchange_accepts_busy_with_sqn_zero() {
+        // BUSY always carries SQN=0 regardless of what the ACU sent
+        // (Annex A.2). Verify we accept it instead of flagging SQN mismatch.
+        let clock = MockClock::new();
+        let mut transport = VecTransport::new();
+        let busy = PacketBuilder::plain(
+            Address::reply(0x05).unwrap(),
+            ControlByte::new(Sqn::ZERO, CtrlFlags::USE_CRC),
+            crate::reply::ReplyCode::Busy.as_byte(),
+            alloc::vec::Vec::new(),
+        )
+        .encode()
+        .unwrap();
+        transport.feed(&busy);
+
+        let mut acu = Acu::new(transport, clock);
+        acu.retry = RetryConfig {
+            max_retries: 0,
+            overall_budget_ms: 0,
+        };
+        let mut pd = PdState {
+            next_sqn: Sqn::new(2).unwrap(),
+            ..Default::default()
+        };
+        pd.mark_seen(0);
+
+        let outcome = acu.exchange(0x05, &mut pd, &Command::Poll(Poll)).unwrap();
+        assert_eq!(outcome, ExchangeOutcome::Busy);
     }
 }

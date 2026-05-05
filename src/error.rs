@@ -82,6 +82,15 @@ pub enum Error {
         /// Address echoed back in the reply.
         got: u8,
     },
+    /// Reply carried a sequence number we did not request. Per spec §5.7 /
+    /// Table 2 the PD must echo the ACU's SQN; a mismatch typically means a
+    /// stale reply from a desynchronised PD.
+    SqnMismatch {
+        /// SQN the ACU sent in the prompting command.
+        expected: u8,
+        /// SQN observed in the reply.
+        got: u8,
+    },
     /// PD answered with [`crate::reply::Nak`].
     Nak {
         /// Error code byte from the reply.
@@ -171,6 +180,9 @@ impl fmt::Display for Error {
             Error::Offline => f.write_str("PD declared off-line"),
             Error::AddrMismatch { sent, got } => {
                 write!(f, "address mismatch: sent {sent:#04x}, got {got:#04x}")
+            }
+            Error::SqnMismatch { expected, got } => {
+                write!(f, "SQN mismatch: expected {expected}, got {got}")
             }
             Error::Nak { code } => write!(f, "PD replied NAK ({code:#04x})"),
             Error::BufferOverflow { need, have } => {
