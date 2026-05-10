@@ -1,6 +1,6 @@
 [package]
 name = "osdp"
-version = "0.3.0"
+version = "0.3.1"
 description = "Pure-Rust, no_std-friendly implementation of the SIA Open Supervised Device Protocol (OSDP) v2.2"
 license = "BSD-3-Clause"
 homepage = "https://github.com/Quantumlyy/osdp-rs/blob/main/README.md"
