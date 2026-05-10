@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.1](https://github.com/Quantumlyy/osdp-rs/compare/v0.3.0...v0.3.1) - 2026-05-09
 
+### Changed
+
+- No user-visible changes; patch release for internal maintenance.
+
 ## [0.3.0](https://github.com/Quantumlyy/osdp-rs/compare/v0.2.1...v0.3.0) - 2026-05-05
 
 ### Added
